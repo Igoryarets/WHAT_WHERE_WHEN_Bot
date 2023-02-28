@@ -13,8 +13,8 @@ from app.store.database import db
 if TYPE_CHECKING:
     from app.web.app import Application
 
-# DATABASE_URL = "postgresql+asyncpg://postgres:postgres@127.0.0.1/kts"
-DATABASE_URL = "postgresql+asyncpg://kts_user:kts_pass@0.0.0.0/kts"
+DATABASE_URL = "postgresql+asyncpg://postgres:postgres@127.0.0.1/Tg_Bot_CHGK"
+# DATABASE_URL = "postgresql+asyncpg://kts_user:kts_pass@0.0.0.0/kts"
 
 
 class Database:

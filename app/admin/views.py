@@ -17,14 +17,14 @@ class AdminLoginView(View):
         # data = await self.request.json()
 
         email = self.data['email']
-        admin = await self.store.admins.get_by_email(email)
-        if not admin:
-            raise HTTPForbidden
+        # admin = await self.store.admins.get_by_email(email)
+        # if not admin:
+        #     raise HTTPForbidden
         password = self.data['password']
-        if admin.password == sha256(password.encode()).hexdigest:
-            raise HTTPForbidden
+        # if admin.password == sha256(password.encode()).hexdigest:
+        #     raise HTTPForbidden
 
-        # admin = await self.store.admins.create_admin(email, password)
+        admin = await self.store.admins.create_admin(email, password)
 
         admin_without_password = AdminSchema().dump(admin)
         session = await new_session(self.request)

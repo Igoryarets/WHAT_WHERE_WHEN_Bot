@@ -5,12 +5,15 @@ from typing import List
 from app.store.tg_api.tg_api import TgClient
 from app.store.tg_api.dcs import UpdateObj
 
+# from .context_var import queue
+
 class Worker:
     def __init__(self, token: str, queue: asyncio.Queue, concurrent_workers: int):
+    # def __init__(self, token: str, concurrent_workers: int):
         self.tg_client = TgClient(token)
         self.queue = queue
         self.concurrent_workers = concurrent_workers
-        self._tasks: List[asyncio.Task] = []
+        self._tasks: List[asyncio.Task] = []        
 
     async def handle_update(self, upd: UpdateObj):
         await self.tg_client.send_message(upd.message.chat.id, upd.message.text, upd.message.message_id)
@@ -21,13 +24,15 @@ class Worker:
             # upd = await self.queue.get()
             # print('Забрал из очереди', upd)
             try:
+            # q = queue.get()
                 print(f'!!!!!!!!!!!!!!! хочу забрать из очереди: {self.queue}')
                 upd = await self.queue.get()
+                # upd = await q.get()
                 print('Забрал из очереди', upd)
                 await self.handle_update(upd)
             finally:
                 print("!!!!!!!!!!!!!!!!! finally worker !!!!!!!!!!!!!!!!")
-                # self.queue.task_done()
+                self.queue.task_done()
 
     async def start(self):
         self._tasks = [asyncio.create_task(self._worker()).add_done_callback(self.done_callback) for _ in range(self.concurrent_workers)]

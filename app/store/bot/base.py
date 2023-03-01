@@ -5,12 +5,18 @@ from app.store.bot.worker import Worker
 
 # from queue import Queue
 
+# from .context_var import queue
+
 class Bot:
     def __init__(self, token: str, n: int):
-        self.queue = asyncio.Queue()
+        # queue.set(asyncio.Queue())
         # self.queue = Queue()
+        self.queue = asyncio.Queue()
         self.poller = Poller(token, self.queue)
         self.worker = Worker(token, self.queue, n)
+
+        # self.poller = Poller(token)
+        # self.worker = Worker(token, n)
 
     async def start(self):
         await self.poller.start()

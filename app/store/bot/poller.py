@@ -15,12 +15,12 @@ class Poller:
     async def _worker(self):
         offset = -1
         while True:
-            print('-worker')
-            res = await self.tg_client.get_updates_in_objects(offset=offset, timeout=60)
-            print('res', res)
+            res = await self.tg_client.get_updates_in_objects(offset=offset, timeout=30)
             for u in res.result:
                 offset = u.update_id + 1
+                print('!!!!!!!!!!!!!! кладем в очередь ', u)
                 self.queue.put_nowait(u)
+                print('!!!!!!!!!!!!!!!!!!!!очередь c положенным объектом!!!!!!!!!!!', self.queue)
 
     async def start(self):
         self._task = asyncio.create_task(self._worker())

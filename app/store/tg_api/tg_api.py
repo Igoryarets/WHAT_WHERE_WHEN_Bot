@@ -4,7 +4,7 @@ import aiohttp
 
 from asyncio import create_task, sleep
 
-# from clients.tg.dcs import GetUpdatesResponse, SendMessageResponse
+from app.store.tg_api.dcs import GetUpdatesResponse, SendMessageResponse
 
 
 class TgClient:
@@ -21,8 +21,8 @@ class TgClient:
                 return await resp.json()
 
     async def get_updates(self, offset: Optional[int] = None, timeout: int = 0) -> dict:
-        print('!!!!!!!!!in_get_update!!!!!!!!!!!')
         url = self.get_url("getUpdates")
+        print('!!!!!!!!!!! in get_updates !!!!!!!!!!!')
         params = {}
         if offset:
             params['offset'] = offset
@@ -30,20 +30,17 @@ class TgClient:
             params['timeout'] = timeout
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as resp:
-                print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!await resp.json()')
                 return await resp.json()
-                
 
-    async def get_updates_in_objects(self, offset: Optional[int] = None, timeout: int = 0):
+    async def get_updates_in_objects(self, offset: Optional[int] = None, timeout: int = 0) -> GetUpdatesResponse:
         print('in get_updates_in_objects')
         res_dict = await self.get_updates(offset=offset, timeout=timeout)
-        print('res_dict', res_dict)
-        # return GetUpdatesResponse.Schema().load(res_dict)
+        print('!!!!!!!!!!!!!!!результирующий словарь: ', res_dict)
+        return GetUpdatesResponse.Schema().load(res_dict)
 
-    async def send_message(self, chat_id: int, text: str, message_id: int = None):
+    async def send_message(self, chat_id: int, text: str, message_id: int = None) -> SendMessageResponse:
         print('in send message')
         url = self.get_url("sendMessage")
-        # url_1 = self.get_url("editMessageText")
 
         btn = {'keyboard': [['Привет', 'Ируха', 'Хитруха']], "one_time_keyboard": True, 'resize_keyboard': True}
         
@@ -120,5 +117,6 @@ class TgClient:
                 async with session.post(url, json=payload) as resp:
                     res_dict = await resp.json()
                     print(res_dict)
+
 
             

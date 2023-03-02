@@ -48,6 +48,5 @@ class AnswerModel(db):
     __tablename__ = "answers"
     id = Column(Integer, primary_key=True)
     title = Column(String)
-    is_correct = Column(Boolean)
     question_id = Column(
         Integer, ForeignKey('questions.id', ondelete='CASCADE'))

@@ -27,22 +27,14 @@ class StartBot(BaseAccessor):
 
 
     async def connect(self, app: "Application"):
-        # loop = asyncio.get_event_loop()
         print('bot has been started')
         
-        try:
-            # loop.create_task(self.bot.start())
-            asyncio.create_task(self.bot.start()).add_done_callback(self.done_callback)
-            # task.add_done_callback(self.done_callback)
-            # loop.run_forever()
-            # loop.run_until_complete(tasks)
-        # except Exception as e:
-        #     print('ОШИБКА !!!!!!!!!!!!!!!!!', e)
-        except KeyboardInterrupt:
-            print("\nstopping", datetime.datetime.now())
-            self.bot.stop()
-            print('bot has been stopped', datetime.datetime.now())
-
+        # try:
+        asyncio.create_task(self.bot.start()).add_done_callback(self.done_callback)
+        # except KeyboardInterrupt:
+        #     print("\nstopping", datetime.datetime.now())
+        #     self.bot.stop()
+        #     print('bot has been stopped', datetime.datetime.now())
     
     def done_callback(self, future: asyncio.Future):
         if future.exception():            

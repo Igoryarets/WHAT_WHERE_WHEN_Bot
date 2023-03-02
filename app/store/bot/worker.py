@@ -5,11 +5,9 @@ from typing import List
 from app.store.tg_api.tg_api import TgClient
 from app.store.tg_api.dcs import UpdateObj
 
-# from .context_var import queue
 
 class Worker:
     def __init__(self, token: str, queue: asyncio.Queue, concurrent_workers: int):
-    # def __init__(self, token: str, concurrent_workers: int):
         self.tg_client = TgClient(token)
         self.queue = queue
         self.concurrent_workers = concurrent_workers
@@ -20,18 +18,10 @@ class Worker:
 
     async def _worker(self):
         while True:
-            # print('!!!!!!!!!!!!!!! хочу забрать из очереди: ')
-            # upd = await self.queue.get()
-            # print('Забрал из очереди', upd)
+            upd = await self.queue.get()
             try:
-            # q = queue.get()
-                print(f'!!!!!!!!!!!!!!! хочу забрать из очереди: {self.queue}')
-                upd = await self.queue.get()
-                # upd = await q.get()
-                print('Забрал из очереди', upd)
                 await self.handle_update(upd)
             finally:
-                print("!!!!!!!!!!!!!!!!! finally worker !!!!!!!!!!!!!!!!")
                 self.queue.task_done()
 
     async def start(self):

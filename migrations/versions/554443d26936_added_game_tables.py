@@ -1,8 +1,8 @@
-"""Added required tables
+"""Added game tables
 
-Revision ID: f180045e7901
+Revision ID: 554443d26936
 Revises: 
-Create Date: 2023-02-28 22:10:21.381471
+Create Date: 2023-03-02 13:50:30.040796
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f180045e7901'
+revision = '554443d26936'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -41,7 +41,6 @@ def upgrade() -> None:
     op.create_table('answers',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(), nullable=True),
-    sa.Column('is_correct', sa.Boolean(), nullable=True),
     sa.Column('question_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['question_id'], ['questions.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')

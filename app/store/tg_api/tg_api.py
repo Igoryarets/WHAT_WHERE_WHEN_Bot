@@ -22,7 +22,6 @@ class TgClient:
 
     async def get_updates(self, offset: Optional[int] = None, timeout: int = 0) -> dict:
         url = self.get_url("getUpdates")
-        print('!!!!!!!!!!! in get_updates !!!!!!!!!!!')
         params = {}
         if offset:
             params['offset'] = offset
@@ -33,7 +32,6 @@ class TgClient:
                 return await resp.json()
 
     async def get_updates_in_objects(self, offset: Optional[int] = None, timeout: int = 0) -> GetUpdatesResponse:
-        print('in get_updates_in_objects')
         res_dict = await self.get_updates(offset=offset, timeout=timeout)
         print('!!!!!!!!!!!!!!!результирующий словарь: ', res_dict)
         return GetUpdatesResponse.Schema().load(res_dict)
@@ -53,7 +51,10 @@ class TgClient:
         if text.startswith('/start'):
 
             text_start = 'Здравствуйте, Вас приветствует бот-ведущий игры что где когда'
-            btn = {'keyboard': [['Пуст_1', 'Пуст_2', 'Пуст_3']], "one_time_keyboard": False, 'resize_keyboard': True}
+            btn = {
+                'keyboard': [['Пуст_1', 'Пуст_2', 'Пуст_3']],
+                'one_time_keyboard': False, 'resize_keyboard': True
+                }
 
             payload = {
                 'chat_id': chat_id,
@@ -69,7 +70,7 @@ class TgClient:
         
         
         
-        if text.startswith('/timer') or text.startswith('Пуст_1') or text.startswith('Пуст_3'):          
+        if text.startswith('/timer'):          
 
             payload = {
                 'chat_id': chat_id,

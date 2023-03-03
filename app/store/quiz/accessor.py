@@ -3,47 +3,47 @@ from typing import Optional
 from sqlalchemy import select
 
 from app.base.base_accessor import BaseAccessor
-from app.quiz.models import (Answer, AnswerModel, Question, QuestionModel,
-                             Theme, ThemeModel)
+from app.quiz.models import Answer, AnswerModel, Question, QuestionModel
+                            #  Theme, ThemeModel)
 
 
 class QuizAccessor(BaseAccessor):
-    async def create_theme(self, title: str) -> Theme:
-        theme = ThemeModel(title=title)
-        async with self.app.database.session() as db:
-            db.add(theme)
+    # async def create_theme(self, title: str) -> Theme:
+    #     theme = ThemeModel(title=title)
+    #     async with self.app.database.session() as db:
+    #         db.add(theme)
 
-            await db.commit()
-            return Theme(id=theme.id, title=theme.title)
+    #         await db.commit()
+    #         return Theme(id=theme.id, title=theme.title)
 
-    async def get_theme_by_title(self, title: str) -> Optional[Theme]:
-        async with self.app.database.session() as db:
-            theme = await db.execute(
-                select(ThemeModel).where(
-                    ThemeModel.title == title))
-            try:
-                (res, ) = theme.first()
-                return Theme(id=res.id, title=res.title)
-            except TypeError:
-                return None
+    # async def get_theme_by_title(self, title: str) -> Optional[Theme]:
+    #     async with self.app.database.session() as db:
+    #         theme = await db.execute(
+    #             select(ThemeModel).where(
+    #                 ThemeModel.title == title))
+    #         try:
+    #             (res, ) = theme.first()
+    #             return Theme(id=res.id, title=res.title)
+    #         except TypeError:
+    #             return None
 
-    async def get_theme_by_id(self, id_: int) -> Optional[Theme]:
-        async with self.app.database.session() as db:
+    # async def get_theme_by_id(self, id_: int) -> Optional[Theme]:
+    #     async with self.app.database.session() as db:
 
-            theme = await db.execute(
-                select(ThemeModel).where(
-                    ThemeModel.id == id_))
-            try:
-                (res, ) = theme.first()
-                return Theme(id=res.id, title=res.title)
-            except TypeError:
-                return None
+    #         theme = await db.execute(
+    #             select(ThemeModel).where(
+    #                 ThemeModel.id == id_))
+    #         try:
+    #             (res, ) = theme.first()
+    #             return Theme(id=res.id, title=res.title)
+    #         except TypeError:
+    #             return None
 
-    async def list_themes(self) -> list[Theme]:
-        async with self.app.database.session() as db:
-            query = select(ThemeModel)
-            themes = (await db.scalars(query)).all()
-            return themes
+    # async def list_themes(self) -> list[Theme]:
+    #     async with self.app.database.session() as db:
+    #         query = select(ThemeModel)
+    #         themes = (await db.scalars(query)).all()
+    #         return themes
 
     async def create_answers(
         self, question_id: int, answers: list[Answer]

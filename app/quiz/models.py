@@ -7,10 +7,10 @@ from sqlalchemy.orm import relationship
 from app.store.database.sqlalchemy_base import db
 
 
-@dataclass
-class Theme:
-    id: Optional[int]
-    title: str
+# @dataclass
+# class Theme:
+#     id: Optional[int]
+#     title: str
 
 
 @dataclass
@@ -27,20 +27,20 @@ class Answer:
     is_correct: bool
 
 
-class ThemeModel(db):
-    __tablename__ = "themes"
-    id = Column(Integer, primary_key=True)
-    title = Column(String, unique=True)
-    questions = relationship(
-        'QuestionModel', cascade='delete, merge, save-update')
+# class ThemeModel(db):
+#     __tablename__ = "themes"
+#     id = Column(Integer, primary_key=True)
+#     title = Column(String, unique=True)
+#     questions = relationship(
+#         'QuestionModel', cascade='delete, merge, save-update')
 
 
 class QuestionModel(db):
     __tablename__ = "questions"
     id = Column(Integer, primary_key=True)
     title = Column(String, unique=True)
-    theme_id = Column(
-        Integer, ForeignKey('themes.id', ondelete='CASCADE'), nullable=False)
+    game_id = Column(
+        Integer, ForeignKey('games.id'), nullable=False)
     answers = relationship('AnswerModel', cascade='delete, merge, save-update')
 
 

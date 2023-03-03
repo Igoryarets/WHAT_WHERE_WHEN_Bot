@@ -36,61 +36,61 @@ class TgClient:
         print('!!!!!!!!!!!!!!!результирующий словарь: ', res_dict)
         return GetUpdatesResponse.Schema().load(res_dict)
 
-    async def send_message(self, chat_id: int, text: str, message_id: int = None) -> SendMessageResponse:
+    async def send_message(
+                            self,
+                            chat_id: Optional[int] = None,
+                            text: Optional[str] = None,
+                            keyboard: Optional[dict] = None,
+                            message_id: Optional[int] = None) -> SendMessageResponse:
+        
         print('in send message')
+
         url = self.get_url("sendMessage")
 
-        btn = {'keyboard': [['Привет', 'Ируха', 'Хитруха']], "one_time_keyboard": True, 'resize_keyboard': True}
+        # btn = {'keyboard': [['Привет', 'Ируха', 'Хитруха']], "one_time_keyboard": True, 'resize_keyboard': True}
         
-        payload = {
-            'chat_id': chat_id,
-            'text': text,
-            'reply_markup': btn,
-        }
-
-        if text.startswith('/start'):
-
-            text_start = 'Здравствуйте, Вас приветствует бот-ведущий игры что где когда'
-            btn = {
-                'keyboard': [['Пуст_1', 'Пуст_2', 'Пуст_3']],
-                'one_time_keyboard': False, 'resize_keyboard': True
-                }
-
+        if keyboard:
             payload = {
                 'chat_id': chat_id,
-                'text': text_start,
-                'reply_markup': btn,
-                }
-
-            async with aiohttp.ClientSession() as session:
-                async with session.post(url, json=payload) as resp:
-                    print('send')
-                    res_dict = await resp.json()
-                    print(res_dict)        
-        
-        
-        
-        if text.startswith('/timer'):          
-
+                'text': text,
+                'reply_markup': keyboard,
+            }
+        else:
             payload = {
                 'chat_id': chat_id,
-                'text': 'Start timer: ',
-                }
-
-            async with aiohttp.ClientSession() as session:
-                async with session.post(url, json=payload) as resp:
-                    print('send')
-                    res_dict = await resp.json()
-                    print(res_dict)
+                'text': text,
+            } 
 
 
-            message_id = res_dict['result']['message_id']
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=payload) as resp:
+                print('send')
+                res_dict = await resp.json()
+                print(res_dict)        
+        
+        
+        
+        # if text.startswith('/timer'):          
 
-            url_1 = self.get_url("editMessageText")
-            seconds = 10
-            create_task(self.start_timer(url_1, chat_id, seconds, message_id))
+        #     payload = {
+        #         'chat_id': chat_id,
+        #         'text': 'Start timer: ',
+        #         }
 
-            print('message_id', message_id)
+        #     async with aiohttp.ClientSession() as session:
+        #         async with session.post(url, json=payload) as resp:
+        #             print('send')
+        #             res_dict = await resp.json()
+        #             print(res_dict)
+
+
+        #     message_id = res_dict['result']['message_id']
+
+        #     url_1 = self.get_url("editMessageText")
+        #     seconds = 10
+        #     create_task(self.start_timer(url_1, chat_id, seconds, message_id))
+
+        #     print('message_id', message_id)
         
         
         # async with aiohttp.ClientSession() as session:
@@ -99,25 +99,25 @@ class TgClient:
         #         return SendMessageResponse.Schema().load(res_dict)
 
 
-    async def start_timer(self, url, chat_id, seconds, message_id):
+    # async def start_timer(self, url, chat_id, seconds, message_id):
 
-        while seconds:
+    #     while seconds:
 
-            print('start_timer')
+    #         print('start_timer')
 
-            payload = {
-            'chat_id': chat_id,
-            'message_id': message_id,
-            'text': f'Start timer: {seconds}',
-            }
+    #         payload = {
+    #         'chat_id': chat_id,
+    #         'message_id': message_id,
+    #         'text': f'Start timer: {seconds}',
+    #         }
             
-            await sleep(1)
-            seconds -= 1
+    #         await sleep(1)
+    #         seconds -= 1
 
-            async with aiohttp.ClientSession() as session:
-                async with session.post(url, json=payload) as resp:
-                    res_dict = await resp.json()
-                    print(res_dict)
+    #         async with aiohttp.ClientSession() as session:
+    #             async with session.post(url, json=payload) as resp:
+    #                 res_dict = await resp.json()
+    #                 print(res_dict)
 
 
             

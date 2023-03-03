@@ -9,24 +9,24 @@ from app.web.mixins import AuthRequiredMixin
 from app.web.utils import json_response
 
 
-class ThemeAddView(AuthRequiredMixin, View):
-    @request_schema(ThemeSchema)
-    @response_schema(ThemeSchema)
-    async def post(self):
-        title = (await self.request.json())["title"]
-        check_theme = await self.store.quizzes.get_theme_by_title(title=title)
-        if check_theme:
-            raise HTTPConflict
+# class ThemeAddView(AuthRequiredMixin, View):
+#     @request_schema(ThemeSchema)
+#     @response_schema(ThemeSchema)
+#     async def post(self):
+#         title = (await self.request.json())["title"]
+#         check_theme = await self.store.quizzes.get_theme_by_title(title=title)
+#         if check_theme:
+#             raise HTTPConflict
 
-        theme = await self.store.quizzes.create_theme(title=title)
-        return json_response(data=ThemeSchema().dump(theme))
+#         theme = await self.store.quizzes.create_theme(title=title)
+#         return json_response(data=ThemeSchema().dump(theme))
 
 
-class ThemeListView(AuthRequiredMixin, View):
-    @response_schema(ThemeListSchema)
-    async def get(self):
-        themes = await self.store.quizzes.list_themes()
-        return json_response(data=ThemeListSchema().dump({'themes': themes}))
+# class ThemeListView(AuthRequiredMixin, View):
+#     @response_schema(ThemeListSchema)
+#     async def get(self):
+#         themes = await self.store.quizzes.list_themes()
+#         return json_response(data=ThemeListSchema().dump({'themes': themes}))
 
 
 class QuestionAddView(AuthRequiredMixin, View):

@@ -17,6 +17,11 @@ class Player:
     name: str
 
 
+@dataclass
+class Game:
+    chat_id: int
+
+
 players_chats = Table(
     'players_chats',
     db.metadata,
@@ -54,7 +59,7 @@ class ChatModel(db):
     players = relationship(
         'PlayerModel', secondary=players_chats, back_populates='chats'
     )
-    games = relationship('GameModel', back_populates='chat')
+    games = relationship('GameModel', back_populates='chats')
 
 
 class GameModel(db):

@@ -17,14 +17,13 @@ from app.store.database.sqlalchemy_base import db
 class Question:
     id: Optional[int]
     title: str
-    theme_id: int
     answers: list["Answer"]
 
 
 @dataclass
 class Answer:
     title: str
-    is_correct: bool
+
 
 
 # class ThemeModel(db):

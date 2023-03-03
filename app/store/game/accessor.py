@@ -1,9 +1,9 @@
 from typing import Optional
 
 from sqlalchemy import select
-
+from sqlalchemy.exc import IntegrityError
 from app.base.base_accessor import BaseAccessor
-from app.game.models import PlayerModel, Player, GameModel, ChatModel
+from app.game.models import PlayerModel, Player, GameModel, Game, ChatModel
 
 
 class GameAccessor(BaseAccessor):
@@ -23,8 +23,6 @@ class GameAccessor(BaseAccessor):
 
     async def get_player_by_id(self, user_id: int):
 
-        print('ВВВВВВВВВВВВВВВВВВВВВВВВ')
-
         async with self.app.database.session() as db:
             player = await db.execute(
                 select(PlayerModel).where(
@@ -42,16 +40,31 @@ class GameAccessor(BaseAccessor):
         pass
 
 
-    async def create_chat(self):
-        pass
+    async def create_chat(self, chat_id):
+        try:
+            async with self.app.database.session() as db:
+                db.add(ChatModel(chat_id=chat_id))
+                await db.commit()
+        except IntegrityError:
+            pass
 
 
     async def get_list_chat(self):
         pass
 
 
-    async def create_game(self):
-        pass
+    async def create_game(self, chat_id: int):
+        game = GameModel(chat_id=chat_id)
+        async with self.app.database.session() as db:
+            db.add(game)
+            try:
+                await db.commit()
+            except Exception:
+                await db.rollback()
+                raise
+        return Game(chat_id=game.chat_id)
+            
+            
 
 
     async def get_list_game(self):

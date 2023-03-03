@@ -46,8 +46,6 @@ class TgClient:
         print('in send message')
 
         url = self.get_url("sendMessage")
-
-        # btn = {'keyboard': [['Привет', 'Ируха', 'Хитруха']], "one_time_keyboard": True, 'resize_keyboard': True}
         
         if keyboard:
             payload = {

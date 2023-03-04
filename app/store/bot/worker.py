@@ -3,7 +3,7 @@ import datetime
 from typing import List
 
 from app.store.bot.handler_command import HandlerCommand
-
+from asyncio import CancelledError
 from app.store.tg_api.dcs import UpdateObj
 from app.store import Store
 import logging
@@ -32,11 +32,18 @@ class Worker:
             update_object = await self.queue.get()
             try:
                 await self.handle_update(update_object)
+            except CancelledError:
+                break
+            except Exception as e:
+                logging.exception(f'ERROR in worker {e}')
             finally:
                 self.queue.task_done()
 
     async def start(self):
-        self._tasks = [asyncio.create_task(self._worker()).add_done_callback(self.done_callback) for _ in range(self.concurrent_workers)]
+        try:
+            self._tasks = [asyncio.create_task(self._worker()).add_done_callback(self.done_callback) for _ in range(self.concurrent_workers)]
+        except CancelledError:
+            pass
 
     def done_callback(self, future: asyncio.Future):
         if future.exception():

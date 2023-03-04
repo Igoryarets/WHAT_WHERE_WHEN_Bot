@@ -1,7 +1,9 @@
 import asyncio
 from asyncio import Task
-from typing import Optional
 
+from typing import Optional
+import logging
+from asyncio import CancelledError
 from app.store.tg_api.tg_api import TgClient
 
 
@@ -15,14 +17,25 @@ class Poller:
         offset = -1
         while True:
             res = await self.tg_client.get_updates_in_objects(offset=offset, timeout=30)
-            for u in res.result:
-                offset = u.update_id + 1
-                print('!!!!!!!!!!!!!! кладем в очередь ', u)
-                self.queue.put_nowait(u)
-                print('!!!!!!!!!!!!!!!!!!!!очередь c положенным объектом!!!!!!!!!!!', self.queue)
+            try:                
+                for u in res.result:
+                    offset = u.update_id + 1
+                    logging.info(f'add to queue {u}')
+                    self.queue.put_nowait(u)
+            except CancelledError:
+                break
+            except Exception as e:
+                logging.exception(f'ERROR in poller {e}')
 
     async def start(self):
-        self._task = asyncio.create_task(self._worker())
+        try:
+            self._task = asyncio.create_task(self._worker()).add_done_callback(self.done_callback)
+        except CancelledError:
+            pass
 
+    def done_callback(self, future: asyncio.Future):
+        if future.exception():            
+            logging.exception(f'error in task poller {future.exception()}')
+    
     async def stop(self):
         self._task.cancel()

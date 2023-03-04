@@ -4,6 +4,9 @@ from typing import Optional
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
+
+from app.game.models import GameModel
+
 from app.store.database.sqlalchemy_base import db
 
 
@@ -38,8 +41,9 @@ class QuestionModel(db):
     __tablename__ = "questions"
     id = Column(Integer, primary_key=True)
     title = Column(String, unique=True)
-    game_id = Column(
-        Integer, ForeignKey('games.id'), nullable=False)
+    games = relationship('GameModel')
+    # game_id = Column(
+    #     Integer, ForeignKey('games.id'), nullable=False)
     answers = relationship('AnswerModel', cascade='delete, merge, save-update')
 
 

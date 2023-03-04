@@ -68,13 +68,13 @@ class QuizAccessor(BaseAccessor):
                 raise
 
     async def create_question(
-        self, title: str, game_id: int,  answers: list[Answer]
+        self, title: str, answers: list[Answer]
     ) -> Question:
 
         async with self.app.database.session() as db:
             question = QuestionModel(
                 title=title,
-                game_id=game_id,
+                # game_id=game_id,
             )
 
             db.add(question)
@@ -92,19 +92,39 @@ class QuizAccessor(BaseAccessor):
                         answers=answers,
             )
 
-    # async def get_answers(self, question_id: int):
-    #     async with self.app.database.session() as db:
-    #         query = await db.execute(
-    #             select(AnswerModel).where(
-    #                 AnswerModel.question_id == question_id))
-    #         answers = query.all()
-    #         list_answer = []
-    #         for answer in answers:
-    #             list_answer.append(Answer(
-    #                 title=answer[0].title,
-    #                 is_correct=answer[0].is_correct
-    #             ))
-    #         return list_answer
+    async def get_questions(self, question_id):
+        async with self.app.database.session() as db:
+            question = await db.execute(
+                select(QuestionModel).where(
+                    QuestionModel.id == question_id))
+            try:
+                (res, ) = question.first()
+                return Question(
+                                id=res.id,
+                                title=res.title,
+                                answers=await self.get_answers(res.id))
+            
+            
+            except TypeError:
+                return None
+
+    async def get_answers(self, question_id: int):
+        async with self.app.database.session() as db:
+            query = await db.execute(
+                select(AnswerModel).where(
+                    AnswerModel.question_id == question_id))
+            answers = query.all()
+            list_answer = []
+            for answer in answers:
+                list_answer.append(Answer(
+                    title=answer[0].title,
+                    # is_correct=answer[0].is_correct
+                ))
+            return list_answer
+
+
+
+
 
     # async def get_question_by_title(self, title: str) -> Optional[Question]:
     #     async with self.app.database.session() as db:
@@ -121,27 +141,18 @@ class QuizAccessor(BaseAccessor):
     #         except TypeError:
     #             return None
 
-    # async def list_questions(
-    #         self, theme_id: Optional[int] = None) -> list[Question]:
-    #     async with self.app.database.session() as db:
-    #         if theme_id is not None:
-    #             query = select(
-    #                 QuestionModel).join(ThemeModel.questions).where(
-    #                     QuestionModel.id == theme_id)
-    #             res = (await db.scalars(query)).all()
-    #         else:
-    #             query = select(QuestionModel)
-    #             res = (await db.scalars(query)).all()
+    async def list_questions(self) -> list[Question]:
+        async with self.app.database.session() as db:
+            query = select(QuestionModel)
+            res = (await db.scalars(query)).all()
+            list_questions = []
 
-    #         list_questions = []
-
-    #         for question in res:
-    #             list_questions.append(
-    #                 Question(
-    #                     id=question.id,
-    #                     title=question.title,
-    #                     theme_id=question.theme_id,
-    #                     answers=await self.get_answers(question.id)
-    #                 )
-    #             )
-    #         return list_questions
+            for question in res:
+                list_questions.append(
+                    Question(
+                        id=question.id,
+                        title=question.title,
+                        answers=await self.get_answers(question.id)
+                    )
+                )
+            return list_questions

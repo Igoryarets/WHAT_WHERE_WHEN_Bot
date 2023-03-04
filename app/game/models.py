@@ -5,7 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, Table, Text, func
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
 
-from app.quiz.models import QuestionModel
+# from app.quiz.models import QuestionModel
 
 from app.store.database.sqlalchemy_base import db
 
@@ -20,6 +20,7 @@ class Player:
 @dataclass
 class Game:
     chat_id: int
+    question_id: int
 
 
 players_chats = Table(
@@ -56,10 +57,10 @@ class ChatModel(db):
 
     chat_id = Column(Integer(), primary_key=True)
 
-    players = relationship(
+    players: list['PlayerModel'] = relationship(
         'PlayerModel', secondary=players_chats, back_populates='chats'
     )
-    games = relationship('GameModel', back_populates='chats')
+    games: list['GameModel'] = relationship('GameModel', back_populates='chats')
 
 
 class GameModel(db):
@@ -67,14 +68,16 @@ class GameModel(db):
 
     id = Column(Integer(), primary_key=True)
     chat_id = Column(ForeignKey('chats.chat_id'), nullable=False)
+    question_id = Column(
+        Integer, ForeignKey('questions.id'), nullable=False)
     start_time = Column(
         TIMESTAMP(timezone=True), server_default=func.now(), nullable=False
     )
     finish_time = Column(TIMESTAMP(timezone=True))
 
-    players = relationship(
+    players: list['PlayerModel'] = relationship(
         'PlayerModel', secondary=players_games, back_populates='games'
     )
-    chats = relationship('ChatModel', back_populates='games')
+    chats: 'ChatModel' = relationship('ChatModel', back_populates='games')
 
-    questions = relationship('QuestionModel')
+    # questions = relationship('QuestionModel')

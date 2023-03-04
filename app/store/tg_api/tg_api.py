@@ -1,8 +1,6 @@
 from typing import Optional
-
 import aiohttp
-
-from asyncio import create_task, sleep
+import logging
 
 from app.store.tg_api.dcs import GetUpdatesResponse, SendMessageResponse
 
@@ -33,7 +31,7 @@ class TgClient:
 
     async def get_updates_in_objects(self, offset: Optional[int] = None, timeout: int = 0) -> GetUpdatesResponse:
         res_dict = await self.get_updates(offset=offset, timeout=timeout)
-        print('!!!!!!!!!!!!!!!результирующий словарь: ', res_dict)
+        logging.info(f'dict updates {res_dict}')       
         return GetUpdatesResponse.Schema().load(res_dict)
 
     async def send_message(
@@ -43,7 +41,7 @@ class TgClient:
                             keyboard: Optional[dict] = None,
                             message_id: Optional[int] = None) -> SendMessageResponse:
         
-        print('in send message')
+        logging.info('work send message')
 
         url = self.get_url("sendMessage")
         
@@ -62,60 +60,7 @@ class TgClient:
 
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=payload) as resp:
-                print('send')
                 res_dict = await resp.json()
-                print(res_dict)        
+                logging.info(f'send message {res_dict}')     
         
-        
-        
-        # if text.startswith('/timer'):          
-
-        #     payload = {
-        #         'chat_id': chat_id,
-        #         'text': 'Start timer: ',
-        #         }
-
-        #     async with aiohttp.ClientSession() as session:
-        #         async with session.post(url, json=payload) as resp:
-        #             print('send')
-        #             res_dict = await resp.json()
-        #             print(res_dict)
-
-
-        #     message_id = res_dict['result']['message_id']
-
-        #     url_1 = self.get_url("editMessageText")
-        #     seconds = 10
-        #     create_task(self.start_timer(url_1, chat_id, seconds, message_id))
-
-        #     print('message_id', message_id)
-        
-        
-        # async with aiohttp.ClientSession() as session:
-        #     async with session.post(url, json=payload) as resp:
-        #         res_dict = await resp.json()
-        #         return SendMessageResponse.Schema().load(res_dict)
-
-
-    # async def start_timer(self, url, chat_id, seconds, message_id):
-
-    #     while seconds:
-
-    #         print('start_timer')
-
-    #         payload = {
-    #         'chat_id': chat_id,
-    #         'message_id': message_id,
-    #         'text': f'Start timer: {seconds}',
-    #         }
-            
-    #         await sleep(1)
-    #         seconds -= 1
-
-    #         async with aiohttp.ClientSession() as session:
-    #             async with session.post(url, json=payload) as resp:
-    #                 res_dict = await resp.json()
-    #                 print(res_dict)
-
-
-            
+  

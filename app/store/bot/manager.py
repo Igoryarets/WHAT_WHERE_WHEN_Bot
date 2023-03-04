@@ -2,7 +2,8 @@ from app.store import Store
 from app.base.base_accessor import BaseAccessor
 import typing
 import asyncio
-
+import logging
+from asyncio import CancelledError
 
 from typing import Optional
 import logging
@@ -27,11 +28,13 @@ class StartBot(BaseAccessor):
 
 
     async def connect(self, app: "Application"):
-        print('bot has been started')
+        logging.info('bot has been started')
         self.poller = Poller(self.token, self.queue)
         self.worker = Worker(self.token, self.queue, self.count_concurency, app.store)       
-        
-        asyncio.create_task(self.start()).add_done_callback(self.done_callback)
+        try:
+            asyncio.create_task(self.start()).add_done_callback(self.done_callback)
+        except CancelledError:
+            pass
 
     async def start(self):
         await self.poller.start()

@@ -34,27 +34,9 @@ class QuestionAddView(AuthRequiredMixin, View):
     @response_schema(QuestionSchema)
     async def post(self):
         data = await self.request.json()
-        # theme_id = data['theme_id']
-        # theme = await self.store.quizzes.get_theme_by_id(id_=theme_id)
-
         answers = data['answers']
         answers_t = [Answer(title=answer['title']) for answer in answers]
-
-        # if not theme:
-        #     raise HTTPNotFound
-
         title = data['title']
-        ex_question = await self.store.quizzes.get_question_by_title(
-            title=title)
-
-        if ex_question:
-            raise HTTPConflict
-
-        # answers = data['answers']
-        # correct_answers = sum([answer['is_correct'] for answer in answers])
-
-        # if correct_answers != 1:
-        #     raise HTTPBadRequest
 
         question = await self.store.quizzes.create_question(
             title=title,

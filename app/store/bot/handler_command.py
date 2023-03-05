@@ -1,3 +1,4 @@
+import asyncio
 from app.store.tg_api.tg_api import TgClient
 from app.store.tg_api.dcs import UpdateObj
 
@@ -41,13 +42,13 @@ class HandlerCommand:
             global KEYBOARD
             keyboard = KEYBOARD['keyboard_start']
             await self.handler_start(chat_id, text, keyboard)
-        elif text == '/registration':
+        elif text.startswith('/registration'):
             await self.handler_registration_user(user_id, user_name, chat_id)
-        elif text == '/start_game':
+        elif text.startswith('/start_game'):
             await self.start_game(chat_id, self.players)
-        elif text == '/help':
+        elif text.startswith('/help'):
             await self.help(chat_id)
-        elif text == '/add':
+        elif text.startswith('/add'):
             await self.create_team(chat_id, user_id, user_name)
 
     async def handler_start(self, chat_id, text, keyboard):
@@ -86,17 +87,11 @@ class HandlerCommand:
         await self.tg_client.send_message(chat_id, text)
 
     async def start_game(self, chat_id, players):
+        if self.players == []:
+            text = (f'Чтобы начать играть, необходимо добавить себя в игру, нажмите /add \n'
+                    f'затем можно начать играть /start_game')
+            await self.tg_client.send_message(chat_id, text)
+            return
+        
         await self.store.games.create_chat(chat_id)
-        # await self.store.games.create_game(chat_id)
-        text = f'Внимание, первый вопрос'
-        await self.tg_client.send_message(chat_id, text)
-        await self.game.start_game(chat_id, players)
-        await self.game.start_timer(chat_id, seconds=10)    
-    
-    
-    async def handler_help(self, update_object):
-        pass
-
-
-
-
+        await self.game.start_game(chat_id, players)    

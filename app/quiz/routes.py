@@ -1,6 +1,6 @@
 import typing
 
-from app.quiz.views import QuestionAddView 
+from app.quiz.views import QuestionAddView
                             # QuestionListView
                             # ThemeAddView,
                             # ThemeListView)

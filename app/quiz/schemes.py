@@ -9,13 +9,12 @@ from marshmallow.validate import Length
 
 class QuestionSchema(Schema):
     id = fields.Int(required=False)
-    title = fields.Str(required=True)
-    answers = fields.Nested(
-        "AnswerSchema", many=True, required=True)
+    question = fields.Str(required=True)
+    answer = fields.Str(required=True)
 
 
-class AnswerSchema(Schema):
-    title = fields.Str(required=True)
+# class AnswerSchema(Schema):
+#     title = fields.Str(required=True)
 
 
 # class ThemeListSchema(Schema):

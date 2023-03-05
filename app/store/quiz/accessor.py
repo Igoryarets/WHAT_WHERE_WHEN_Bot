@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import select
 
 from app.base.base_accessor import BaseAccessor
-from app.quiz.models import Answer, AnswerModel, Question, QuestionModel
+from app.quiz.models import Question, QuestionModel
                             #  Theme, ThemeModel)
 
 
@@ -45,36 +45,36 @@ class QuizAccessor(BaseAccessor):
     #         themes = (await db.scalars(query)).all()
     #         return themes
 
-    async def create_answers(
-        self, question_id: int, answers: list[Answer]
-    ) -> list[Answer]:
+    # async def create_answers(
+    #     self, question_id: int, answer: str
+    # ) -> list[Answer]:
 
-        async with self.app.database.session() as db:
+    #     async with self.app.database.session() as db:
 
-            answer_list = []
-            for answer in answers:
-                answer_list.append(
-                    AnswerModel(
-                        title=answer.title,
-                        question_id=question_id
-                    )
-                )
+    #         answer_list = []
+    #         for answer in answers:
+    #             answer_list.append(
+    #                 AnswerModel(
+    #                     title=answer.title,
+    #                     question_id=question_id
+    #                 )
+    #             )
 
-            db.add_all(answer_list)
-            try:
-                await db.commit()
-            except Exception:
-                await db.rollback()
-                raise
+            # db.add_all(answer_list)
+            # try:
+            #     await db.commit()
+            # except Exception:
+            #     await db.rollback()
+            #     raise
 
     async def create_question(
-        self, title: str, answers: list[Answer]
+        self, question: str, answer: str
     ) -> Question:
 
         async with self.app.database.session() as db:
             question = QuestionModel(
-                title=title,
-                # game_id=game_id,
+                question=question,
+                answer=answer,
             )
 
             db.add(question)
@@ -84,13 +84,27 @@ class QuizAccessor(BaseAccessor):
                 await db.rollback()
                 raise
 
-        await self.create_answers(question.id, answers)
-
         return Question(
                         id=question.id,
-                        title=question.title,                        
-                        answers=answers,
+                        title=question.question,                        
+                        answer=answer,
             )
+
+    async def create_questions(self, reader):
+        async with self.app.database.session() as db:
+            questions = []
+            for r in reader:
+                question = QuestionModel(
+                    question=r['question'], answer=r['answer'])
+                questions.append(question)
+
+            db.add_all(questions)
+            try:
+                await db.commit()
+            except Exception:
+                await db.rollback()
+                raise            
+        
 
     async def get_questions(self, question_id):
         async with self.app.database.session() as db:
@@ -101,26 +115,26 @@ class QuizAccessor(BaseAccessor):
                 (res, ) = question.first()
                 return Question(
                                 id=res.id,
-                                title=res.title,
-                                answers=await self.get_answers(res.id))
+                                question=res.question,
+                                answer=res.answer)
             
             
             except TypeError:
                 return None
 
-    async def get_answers(self, question_id: int):
-        async with self.app.database.session() as db:
-            query = await db.execute(
-                select(AnswerModel).where(
-                    AnswerModel.question_id == question_id))
-            answers = query.all()
-            list_answer = []
-            for answer in answers:
-                list_answer.append(Answer(
-                    title=answer[0].title,
-                    # is_correct=answer[0].is_correct
-                ))
-            return list_answer
+    # async def get_answers(self, question_id: int):
+    #     async with self.app.database.session() as db:
+    #         query = await db.execute(
+    #             select(AnswerModel).where(
+    #                 AnswerModel.question_id == question_id))
+    #         answers = query.all()
+    #         list_answer = []
+    #         for answer in answers:
+    #             list_answer.append(Answer(
+    #                 title=answer[0].title,
+    #                 # is_correct=answer[0].is_correct
+    #             ))
+    #         return list_answer
 
 
 

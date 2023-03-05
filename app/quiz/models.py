@@ -19,13 +19,13 @@ from app.store.database.sqlalchemy_base import db
 @dataclass
 class Question:
     id: Optional[int]
-    title: str
-    answers: list["Answer"]
+    question: str
+    answer: str
 
 
-@dataclass
-class Answer:
-    title: str
+# @dataclass
+# class Answer:
+#     title: str
 
 
 
@@ -40,16 +40,17 @@ class Answer:
 class QuestionModel(db):
     __tablename__ = "questions"
     id = Column(Integer, primary_key=True)
-    title = Column(String, unique=True)
+    question = Column(String, nullable=False)
+    answer = Column(String, nullable=False)
     games = relationship('GameModel')
     # game_id = Column(
     #     Integer, ForeignKey('games.id'), nullable=False)
-    answers = relationship('AnswerModel', cascade='delete, merge, save-update')
+    # answers = relationship('AnswerModel', cascade='delete, merge, save-update')
 
 
-class AnswerModel(db):
-    __tablename__ = "answers"
-    id = Column(Integer, primary_key=True)
-    title = Column(String)
-    question_id = Column(
-        Integer, ForeignKey('questions.id', ondelete='CASCADE'))
+# class AnswerModel(db):
+#     __tablename__ = "answers"
+#     id = Column(Integer, primary_key=True)
+#     title = Column(String)
+#     question_id = Column(
+#         Integer, ForeignKey('questions.id', ondelete='CASCADE'))

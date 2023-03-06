@@ -16,7 +16,7 @@ class Poller:
     async def _worker(self):
         offset = -1
         while True:
-            res = await self.tg_client.get_updates_in_objects(offset=offset, timeout=30)
+            res = await self.tg_client.get_updates_in_objects(offset=offset, timeout=60)
             try:                
                 for u in res.result:
                     offset = u.update_id + 1

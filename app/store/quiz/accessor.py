@@ -122,6 +122,23 @@ class QuizAccessor(BaseAccessor):
             except TypeError:
                 return None
 
+
+    async def get_answer(self, answer):
+        async with self.app.database.session() as db:
+            answer = await db.execute(
+                select(QuestionModel).where(
+                    QuestionModel.answer == answer))
+            try:
+                (res, ) = answer.first()
+                return Question(
+                                id=res.id,
+                                question=res.question,
+                                answer=res.answer)
+            
+            
+            except TypeError:
+                return None
+
     # async def get_answers(self, question_id: int):
     #     async with self.app.database.session() as db:
     #         query = await db.execute(

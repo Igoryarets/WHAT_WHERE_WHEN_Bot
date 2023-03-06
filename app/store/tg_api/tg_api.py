@@ -61,6 +61,6 @@ class TgClient:
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=payload) as resp:
                 res_dict = await resp.json()
-                logging.info(f'send message {res_dict}')     
-        
+                logging.info(f'send message {res_dict}')
+                return SendMessageResponse.Schema().load(res_dict)        
   

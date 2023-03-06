@@ -1,4 +1,3 @@
-import asyncio
 from app.store.tg_api.tg_api import TgClient
 from app.store.tg_api.dcs import UpdateObj
 
@@ -32,11 +31,17 @@ class HandlerCommand:
 
 
     async def handler_command(self, update_object: UpdateObj):
-        chat_id = update_object.message.chat.id
-        text = update_object.message.text
-        # message_id = update_object.message.message_id
-        user_id = update_object.message.from_.id
-        user_name = update_object.message.from_.first_name        
+
+        if update_object.callback_query:
+            chat_id = update_object.callback_query.message.chat.id
+            text = update_object.callback_query.message.text
+            user_id = update_object.callback_query.from_.id
+            user_name = update_object.callback_query.from_.first_name
+        else:
+            chat_id = update_object.message.chat.id
+            text = update_object.message.text
+            user_id = update_object.message.from_.id
+            user_name = update_object.message.from_.first_name       
         
         if text == '/start':
             global KEYBOARD
@@ -50,6 +55,9 @@ class HandlerCommand:
             await self.help(chat_id)
         elif text.startswith('/add'):
             await self.create_team(chat_id, user_id, user_name)
+        elif text.startswith('/answer'):
+            await self.handler_answer(chat_id, user_id, text)
+        
 
     async def handler_start(self, chat_id, text, keyboard):
         text = 'Здравствуйте, я бот для игры "Что, Где, Когда?"'
@@ -94,4 +102,7 @@ class HandlerCommand:
             return
         
         await self.store.games.create_chat(chat_id)
-        await self.game.start_game(chat_id, players)    
+        await self.game.start_game(chat_id, players)
+    
+    async def handler_answer(self, сhat_id, user_id, text):
+        await self.game.answer(сhat_id, user_id, text)

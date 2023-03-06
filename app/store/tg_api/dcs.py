@@ -15,6 +15,15 @@ class MessageFrom:
     class Meta:
         unknown = EXCLUDE
 
+@dataclass
+class CallbackFrom:
+    id: int
+    first_name: str
+    username: Optional[str] = None
+
+    class Meta:
+        unknown = EXCLUDE
+
 
 @dataclass
 class Chat:
@@ -28,6 +37,22 @@ class Chat:
     class Meta:
         unknown = EXCLUDE
 
+@dataclass
+class ReplyMarkupData:
+    text: str
+    callback_data: str
+
+    class Meta:
+        unknown = EXCLUDE
+
+
+@dataclass
+class ReplyMarkup:
+    inline_keyboard: List[List[ReplyMarkupData]]
+
+    class Meta:
+        unknown = EXCLUDE
+
 
 @dataclass
 class Message:
@@ -35,6 +60,18 @@ class Message:
     from_: MessageFrom = field(metadata={"data_key": "from"})
     chat: Chat
     text: Optional[str] = None
+    reply_markup: Optional[ReplyMarkup] = None
+
+    class Meta:
+        unknown = EXCLUDE
+
+
+@dataclass
+class Callback:
+    id: int
+    from_: CallbackFrom = field(metadata={"data_key": "from"})
+    message: Message
+
 
     class Meta:
         unknown = EXCLUDE
@@ -43,7 +80,8 @@ class Message:
 @dataclass
 class UpdateObj:
     update_id: int
-    message: Message
+    message: Message = None
+    callback_query: Callback = None
 
     class Meta:
         unknown = EXCLUDE

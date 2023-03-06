@@ -10,6 +10,8 @@ class Game:
         self.start_count_round: int = 1
         self.choice_questions: bool = True
         self.tg_client = tg_client
+        self.callback_id_user: str = None
+        self.answer_quest: str = None 
 
     
     def random_question(self) -> int:
@@ -44,20 +46,54 @@ class Game:
             if check is True:
                 captain = await self.choice_captain(players, chat_id)
                 await self.store.games.create_game(chat_id, players, random_id_quest)
-                await self.get_question_from_db(chat_id, random_id_quest)
+                quest = await self.get_question_from_db(chat_id, random_id_quest)
+                self.answer_quest = quest.answer
                 timer = await self.start_timer(chat_id)                
                 
                 if timer:
 
-                    text = (f'Капитан {captain["username"]} выбирите игрока,\n'
+                    text = (f'Капитан {captain["username"]} выберите игрока,\n'
                             f'который ответит на заданный вопрос')
                     keyboard = {'inline_keyboard': [[{
                         'text':player['username'],
                         'callback_data': player['user_id']}] for player in players]}
                     
-                    await self.tg_client.send_message(chat_id, text, keyboard)                              
-                self.choice_questions = False    
+                    msg= await self.tg_client.send_message(chat_id, text, keyboard)
 
+                    id_captain = captain['user_id']
+
+                    if id_captain != int(msg.result.from_.id):
+                        print('QQQQQQQQQQQQQQQQQQQQQQQQQ', id_captain)
+                        print('TTTTTTTTTTTTTTTTTTTTTT', int(msg.result.from_.id))
+                        text = (f'Выбрать игрока, который будет отвечать, должен капитан.\n'
+                                f'Напоминаем, что капитаном является:\n{captain["username"]}\n'
+                                f'id: {captain["user_id"]}')
+                        await self.tg_client.send_message(chat_id, text)                    
+             
+                    self.callback_id_user = msg.result.reply_markup.inline_keyboard[0][0].callback_data
+                    callback_user = msg.result.reply_markup.inline_keyboard[0][0].text
+
+                    text = f'Отвечать будет {callback_user}'
+                    await self.tg_client.send_message(chat_id, text)
+
+
+                self.choice_questions = False
+
+
+    async def answer(self, chat_id, user_id, text):
+        if int(self.callback_id_user) != user_id:
+            text = 'Отвечать должен тот игрок, которого выбрал капитан'
+            await self.tg_client.send_message(chat_id, text)
+        else:
+            answer_from_player = text.split()            
+
+            if self.answer_quest in answer_from_player:
+                text = 'Ответ верный, поздравляем !!!'
+                await self.tg_client.send_message(chat_id, text)
+            else:
+                text = f'К сожалению вы ответили неверно, правильный ответ {self.answer_quest}'
+                await self.tg_client.send_message(chat_id, text)
+        
 
     async def get_question_from_db(self, chat_id, question_id):
         if await self.finish_game(chat_id):
@@ -67,6 +103,7 @@ class Game:
                 f'Внимание вопрос: \n{question.question}')
         self.start_count_round += 1
         await self.tg_client.send_message(chat_id, text)
+        return question
         
 
     async def finish_game(self, chat_id):

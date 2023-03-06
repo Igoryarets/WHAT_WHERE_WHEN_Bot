@@ -70,7 +70,12 @@ class HandlerCommand:
 
     
     async def help(self, chat_id):
-        text = 'Допустимые команды: '
+        text = ('Допустимые команды:\n'
+                '/registration \n'
+                '/start_tour\n'
+                '/help\n'
+                '/add\n'
+                '/answer')
         await self.tg_client.send_message(chat_id, text)
 
     

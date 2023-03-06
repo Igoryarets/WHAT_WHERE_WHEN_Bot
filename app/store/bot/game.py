@@ -6,12 +6,16 @@ from asyncio import sleep
 class Game:
     def __init__(self, store: Store, tg_client: TgClient):
         self.store = store
-        self.finish_count_round: int = 3
+        self.finish_count_round: int = 7
         self.start_count_round: int = 1
         self.choice_questions: bool = True
         self.tg_client = tg_client
         self.callback_id_user: str = None
-        self.answer_quest: str = None 
+        self.answer_quest: str = None
+        self.id_captain: int = None 
+        self.name_captain: str = None
+        self.score_player: int = 0
+        self.score_bot: int = 0
 
     
     def random_question(self) -> int:
@@ -48,6 +52,7 @@ class Game:
                 await self.store.games.create_game(chat_id, players, random_id_quest)
                 quest = await self.get_question_from_db(chat_id, random_id_quest)
                 self.answer_quest = quest.answer
+                print(f'!!!!!!!!!!!!{self.answer_quest}!!!!!!!!!!!!!')
                 timer = await self.start_timer(chat_id)                
                 
                 if timer:
@@ -55,43 +60,35 @@ class Game:
                     text = (f'Капитан {captain["username"]} выберите игрока,\n'
                             f'который ответит на заданный вопрос')
                     keyboard = {'inline_keyboard': [[{
-                        'text':player['username'],
+                        'text': player['username'],
                         'callback_data': player['user_id']}] for player in players]}
                     
-                    msg= await self.tg_client.send_message(chat_id, text, keyboard)
+                    await self.tg_client.send_message(chat_id, text, keyboard)
 
-                    id_captain = captain['user_id']
+                    self.id_captain = captain['user_id']
+                    self.name_captain = captain['username']
 
-                    if id_captain != int(msg.result.from_.id):
-                        print('QQQQQQQQQQQQQQQQQQQQQQQQQ', id_captain)
-                        print('TTTTTTTTTTTTTTTTTTTTTT', int(msg.result.from_.id))
-                        text = (f'Выбрать игрока, который будет отвечать, должен капитан.\n'
-                                f'Напоминаем, что капитаном является:\n{captain["username"]}\n'
-                                f'id: {captain["user_id"]}')
-                        await self.tg_client.send_message(chat_id, text)                    
-             
-                    self.callback_id_user = msg.result.reply_markup.inline_keyboard[0][0].callback_data
-                    callback_user = msg.result.reply_markup.inline_keyboard[0][0].text
-
-                    text = f'Отвечать будет {callback_user}'
-                    await self.tg_client.send_message(chat_id, text)
-
+                if self.finish_game(chat_id):
+                    await self.get_score_game(chat_id)
 
                 self.choice_questions = False
 
 
-    async def answer(self, chat_id, user_id, text):
-        if int(self.callback_id_user) != user_id:
+    async def answer(self, chat_id, user_id, text, id_callback_user):
+        if int(id_callback_user) != user_id:
             text = 'Отвечать должен тот игрок, которого выбрал капитан'
             await self.tg_client.send_message(chat_id, text)
+            return
         else:
             answer_from_player = text.split()            
 
             if self.answer_quest in answer_from_player:
                 text = 'Ответ верный, поздравляем !!!'
+                self.score_player += 1
                 await self.tg_client.send_message(chat_id, text)
             else:
                 text = f'К сожалению вы ответили неверно, правильный ответ {self.answer_quest}'
+                self.score_bot
                 await self.tg_client.send_message(chat_id, text)
         
 
@@ -106,11 +103,34 @@ class Game:
         return question
         
 
+    async def captain_choice_player(self, user_id: int, id_choice_player: str, username_callback_user: str, chat_id: int):
+        if self.id_captain != user_id:
+            text = (f'Выбрать игрока, который будет отвечать, должен капитан.\n'
+                    f'Напоминаем, что капитаном является:\n{self.name_captain}\n'
+                    f'id: {self.id_captain}')
+            await self.tg_client.send_message(chat_id, text)
+        else:
+            text = f'Отвечать будет {username_callback_user}'
+            await self.tg_client.send_message(chat_id, text)
+
+
     async def finish_game(self, chat_id):
         if self.start_count_round == self.finish_count_round:
             text = 'Конец игры'
             await self.tg_client.send_message(chat_id, text)
             return True
+
+    
+    async def get_score_game(self, chat_id):
+        if self.score_bot > self.score_player:
+            text = (f'К сожалению ваша команда проиграла со счетом '
+                    f'{self.score_player}:{self.score_bot}')
+            await self.tg_client.send_message(chat_id, text)
+        
+        text = (f'Поздравляем !!!! Ваша команда одержала победу со счетом '
+                f'{self.score_player}:{self.score_bot}')
+        await self.tg_client.send_message(chat_id, text)
+        
 
     async def start_timer(self, chat_id, seconds=60):
         
@@ -123,55 +143,5 @@ class Game:
             if seconds == 10:
                 text = 'У вас осталось 10 секунд'
                 await self.tg_client.send_message(chat_id, text)
-        return True
-        
-      
-
-# if text.startswith('/timer'):          
-
-        #     payload = {
-        #         'chat_id': chat_id,
-        #         'text': 'Start timer: ',
-        #         }
-
-        #     async with aiohttp.ClientSession() as session:
-        #         async with session.post(url, json=payload) as resp:
-        #             print('send')
-        #             res_dict = await resp.json()
-        #             print(res_dict)
-
-
-        #     message_id = res_dict['result']['message_id']
-
-        #     url_1 = self.get_url("editMessageText")
-        #     seconds = 10
-        #     create_task(self.start_timer(url_1, chat_id, seconds, message_id))
-
-        #     print('message_id', message_id)
-        
-        
-        # async with aiohttp.ClientSession() as session:
-        #     async with session.post(url, json=payload) as resp:
-        #         res_dict = await resp.json()
-        #         return SendMessageResponse.Schema().load(res_dict)
-
-
-    # async def start_timer(self, url, chat_id, seconds, message_id):
-
-    #     while seconds:
-
-    #         print('start_timer')
-
-    #         payload = {
-    #         'chat_id': chat_id,
-    #         'message_id': message_id,
-    #         'text': f'Start timer: {seconds}',
-    #         }
-            
-    #         await sleep(1)
-    #         seconds -= 1
-
-    #         async with aiohttp.ClientSession() as session:
-    #             async with session.post(url, json=payload) as resp:
-    #                 res_dict = await resp.json()
-    #                 print(res_dict)
+        return True     
+   

@@ -15,7 +15,7 @@ COMMANDS_BOT = {
 
 KEYBOARD = {
     'keyboard_start': {
-        'keyboard': [['/registration', '/start_game', '/help', '/add']],
+        'keyboard': [['/registration', '/start_tour', '/help', '/add']],
         'one_time_keyboard': True,
          'resize_keyboard': True},
     
@@ -28,6 +28,7 @@ class HandlerCommand:
         self.game = Game(store, self.tg_client)
         self.store = store
         self.players = []
+        self.id_callback_user: str =None
 
 
     async def handler_command(self, update_object: UpdateObj):
@@ -37,6 +38,8 @@ class HandlerCommand:
             text = update_object.callback_query.message.text
             user_id = update_object.callback_query.from_.id
             user_name = update_object.callback_query.from_.first_name
+            id_callback_user = update_object.callback_query.message.reply_markup.inline_keyboard[0][0].callback_data
+            username_callback_user = update_object.callback_query.message.reply_markup.inline_keyboard[0][0].text
         else:
             chat_id = update_object.message.chat.id
             text = update_object.message.text
@@ -49,14 +52,16 @@ class HandlerCommand:
             await self.handler_start(chat_id, text, keyboard)
         elif text.startswith('/registration'):
             await self.handler_registration_user(user_id, user_name, chat_id)
-        elif text.startswith('/start_game'):
+        elif text.startswith('/start_tour'):
             await self.start_game(chat_id, self.players)
         elif text.startswith('/help'):
             await self.help(chat_id)
         elif text.startswith('/add'):
             await self.create_team(chat_id, user_id, user_name)
         elif text.startswith('/answer'):
-            await self.handler_answer(chat_id, user_id, text)
+            await self.handler_answer(chat_id, user_id, text, self.id_callback_user)
+        else:
+            await self.handler_inline(user_id, id_callback_user, username_callback_user, chat_id)
         
 
     async def handler_start(self, chat_id, text, keyboard):
@@ -104,5 +109,9 @@ class HandlerCommand:
         await self.store.games.create_chat(chat_id)
         await self.game.start_game(chat_id, players)
     
-    async def handler_answer(self, сhat_id, user_id, text):
-        await self.game.answer(сhat_id, user_id, text)
+    async def handler_answer(self, сhat_id, user_id, text, id_choice_player):
+        await self.game.answer(сhat_id, user_id, text, id_choice_player)
+
+    async def handler_inline(self, user_id, id_choice_player: str, username_callback_user: str, chat_id: int):
+        self.id_callback_user = id_choice_player
+        await self.game.captain_choice_player(user_id, id_choice_player, username_callback_user, chat_id)

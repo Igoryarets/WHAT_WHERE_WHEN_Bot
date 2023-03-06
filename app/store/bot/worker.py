@@ -25,8 +25,10 @@ class Worker:
 
 
     async def handle_update(self, update_object: UpdateObj):
-            await self.handler.handler_command(update_object)
-    
+            await self.handler.handler_command(update_object) 
+
+
+
     async def _worker(self):
         while True:
             update_object = await self.queue.get()

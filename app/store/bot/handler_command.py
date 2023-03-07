@@ -29,6 +29,7 @@ class HandlerCommand:
         self.store = store
         self.players = []
         self.id_callback_user: str =None
+        self.is_list_players: bool = True
 
 
     async def handler_command(self, update_object: UpdateObj):
@@ -53,7 +54,9 @@ class HandlerCommand:
         elif text.startswith('/registration'):
             await self.handler_registration_user(user_id, user_name, chat_id)
         elif text.startswith('/start_tour'):
-            await self.start_game(chat_id, self.players)
+            await self.start_tour(chat_id, self.players)
+        # elif text.startswith('/start_game'):
+        #     await self.start_game()
         elif text.startswith('/help'):
             await self.help(chat_id)
         elif text.startswith('/add'):
@@ -104,12 +107,21 @@ class HandlerCommand:
         text = 'Добро пожаловать на игру !!!'
         await self.tg_client.send_message(chat_id, text)
 
-    async def start_game(self, chat_id, players):
+
+    # async def start_game(self):
+    #     pass
+
+
+    async def start_tour(self, chat_id, players):
         if self.players == []:
             text = (f'Чтобы начать играть, необходимо добавить себя в игру, нажмите /add \n'
-                    f'затем можно начать играть /start_game')
+                    f'затем можно начать играть /start_tour')
             await self.tg_client.send_message(chat_id, text)
-            return
+            return       
+
+        if self.is_list_players:
+            await self.game.get_list_players(chat_id, players)
+            self.is_list_players = False
         
         await self.store.games.create_chat(chat_id)
         await self.game.start_game(chat_id, players)

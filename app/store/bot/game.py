@@ -6,7 +6,7 @@ from asyncio import sleep
 class Game:
     def __init__(self, store: Store, tg_client: TgClient):
         self.store = store
-        self.finish_count_round: int = 7
+        self.finish_count_round: int = 5
         self.start_count_round: int = 1
         self.choice_questions: bool = True
         self.tg_client = tg_client
@@ -42,6 +42,15 @@ class Game:
         await self.tg_client.send_message(chat_id, text)
         return players[idx]
 
+    async def get_list_players(self, chat_id, players):        
+        text = 'В игре сегодня участвуют:\n'
+        i = 1
+        for player in players:
+            text += f'{i}. {player["username"]}\n'
+            i += 1
+        await self.tg_client.send_message(chat_id, text)
+        return True
+                
 
     async def start_game(self, chat_id: int, players: list[dict]) -> None:
         while self.choice_questions:            
@@ -53,7 +62,7 @@ class Game:
                 quest = await self.get_question_from_db(chat_id, random_id_quest)
                 self.answer_quest = quest.answer
                 print(f'!!!!!!!!!!!!{self.answer_quest}!!!!!!!!!!!!!')
-                timer = await self.start_timer(chat_id)                
+                timer = await self.start_timer_tour(chat_id)                
                 
                 if timer:
 
@@ -67,9 +76,6 @@ class Game:
 
                     self.id_captain = captain['user_id']
                     self.name_captain = captain['username']
-
-                if self.finish_game(chat_id):
-                    await self.get_score_game(chat_id)
 
                 self.choice_questions = False
 
@@ -94,6 +100,7 @@ class Game:
 
     async def get_question_from_db(self, chat_id, question_id):
         if await self.finish_game(chat_id):
+            await self.get_score_game(chat_id)
             return
         question = await self.store.quizzes.get_questions(question_id)
         text = (f'Раунд №{self.start_count_round} \n'
@@ -132,7 +139,7 @@ class Game:
         await self.tg_client.send_message(chat_id, text)
         
 
-    async def start_timer(self, chat_id, seconds=60):
+    async def start_timer_tour(self, chat_id, seconds=60):
         
         while seconds:           
             await sleep(1)
@@ -143,5 +150,7 @@ class Game:
             if seconds == 10:
                 text = 'У вас осталось 10 секунд'
                 await self.tg_client.send_message(chat_id, text)
-        return True     
-   
+        return True
+
+    async def start_timer_game(self):
+        pass

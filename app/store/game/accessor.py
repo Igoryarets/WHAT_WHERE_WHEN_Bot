@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -123,6 +124,22 @@ class GameAccessor(BaseAccessor):
             
     async def get_list_game(self):
         pass
+
+
+
+    
+    # async def finish_game(self, game_id: int, players: list[Player]) -> None:
+    #     async with self.session() as db:
+    #         await db.execute(
+    #             update(GameModel)
+    #             .where(GameModel.id == game_id)
+    #             .values(end_time=datetime.now())
+    #         )
+    #         for player in players:
+    #             db_player: PlayerModel = await db.get(PlayerModel, player.id)
+    #             db_player.balance = player.balance
+    #             db.add(db_player)
+    #         await db.commit()
 
     
 

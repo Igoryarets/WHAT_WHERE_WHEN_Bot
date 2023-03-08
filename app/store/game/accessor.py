@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from app.base.base_accessor import BaseAccessor
 from app.game.models import PlayerModel, Player, GameModel, Game, ChatModel, players_chats, players_games
@@ -56,8 +56,8 @@ class GameAccessor(BaseAccessor):
         pass
 
 
-    async def create_game(self, chat_id: int, players: list[dict], questions_id: int) -> Game:
-        game = GameModel(chat_id=chat_id, question_id=questions_id)
+    async def create_game(self, chat_id: int, players: list[dict]) -> Game:
+        game = GameModel(chat_id=chat_id, is_active=True)
         
         async with self.app.database.session() as db:
             db.add(game)
@@ -69,7 +69,7 @@ class GameAccessor(BaseAccessor):
 
             await self.add_players_to_game(players, chat_id, game.id)
 
-        return Game(chat_id=game.chat_id, question_id=game.question_id)
+        return Game(id=game.id, chat_id=game.chat_id, is_active=game.is_active)
 
 
     async def add_players_to_game(self, players: list[dict], chat_id: int, game_id: int):
@@ -107,39 +107,51 @@ class GameAccessor(BaseAccessor):
     
 
 
-    async def get_game_by_question_id(self, question_id):
-        async with self.app.database.session() as db:
+    # async def get_game_by_question_id(self, question_id):
+    #     async with self.app.database.session() as db:
             
-            try:
-                game = await db.execute(
-                    select(GameModel).where(
-                        GameModel.question_id == question_id
-                    )
-                )
-                (res, ) = game.first()
-            except TypeError:
-                return None
-        return Game(game_id=res.id, question_id=res.question_id)
+    #         try:
+    #             game = await db.execute(
+    #                 select(GameModel).where(
+    #                     GameModel.question_id == question_id
+    #                 )
+    #             )
+    #             (res, ) = game.first()
+    #         except TypeError:
+    #             return None
+    #     return Game(game_id=res.id, question_id=res.question_id)
             
             
     async def get_list_game(self):
         pass
 
-
-
     
-    # async def finish_game(self, game_id: int, players: list[Player]) -> None:
-    #     async with self.session() as db:
-    #         await db.execute(
-    #             update(GameModel)
-    #             .where(GameModel.id == game_id)
-    #             .values(end_time=datetime.now())
-    #         )
-    #         for player in players:
-    #             db_player: PlayerModel = await db.get(PlayerModel, player.id)
-    #             db_player.balance = player.balance
-    #             db.add(db_player)
-    #         await db.commit()
+    async def get_active_game(self, chat_id):
+        async with self.app.database.session() as db:
+            try:
+                await db.execute(
+                        select(GameModel).where(
+                            GameModel.chat_id == chat_id,
+                            GameModel.is_active == True,
+                        )
+                    )
+                
+            except TypeError:
+                return None
+
+        return True
+    
+    
+    async def finish_game(self, id_game: int, ) -> None:
+        async with self.app.database.session() as db:
+            await db.execute(
+                update(GameModel)
+                .where(GameModel.id == id_game)
+                .values(finish_time=datetime.now(),
+                        is_acitive=False)
+            )
+
+            await db.commit()
 
     
 

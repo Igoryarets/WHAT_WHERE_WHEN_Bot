@@ -5,7 +5,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 
-from app.game.models import GameModel
+from app.game.models import TourGame
 
 from app.store.database.sqlalchemy_base import db
 
@@ -42,7 +42,7 @@ class QuestionModel(db):
     id = Column(Integer, primary_key=True)
     question = Column(String, nullable=False)
     answer = Column(String, nullable=False)
-    games = relationship('GameModel')
+    tours = relationship('TourGame')
     # game_id = Column(
     #     Integer, ForeignKey('games.id'), nullable=False)
     # answers = relationship('AnswerModel', cascade='delete, merge, save-update')

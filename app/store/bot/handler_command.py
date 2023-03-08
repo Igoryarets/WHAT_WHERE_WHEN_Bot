@@ -30,6 +30,7 @@ class HandlerCommand:
         self.players = []
         self.id_callback_user: str =None
         self.is_list_players: bool = True
+        # self.active_games: dict = {}
 
 
     async def handler_command(self, update_object: UpdateObj):
@@ -53,10 +54,10 @@ class HandlerCommand:
             await self.handler_start(chat_id, text, keyboard)
         elif text.startswith('/registration'):
             await self.handler_registration_user(user_id, user_name, chat_id)
-        elif text.startswith('/start_tour'):
-            await self.start_tour(chat_id, self.players)
-        # elif text.startswith('/start_game'):
-        #     await self.start_game()
+        # elif text.startswith('/start_tour'):
+        #     await self.start_tour(chat_id, self.players)
+        elif text.startswith('/start_game'):
+            await self.start_game()
         elif text.startswith('/help'):
             await self.help(chat_id)
         elif text.startswith('/add'):
@@ -108,23 +109,33 @@ class HandlerCommand:
         await self.tg_client.send_message(chat_id, text)
 
 
-    # async def start_game(self):
-    #     pass
-
-
-    async def start_tour(self, chat_id, players):
+    async def start_game(self, chat_id):
+        if self.store.games.get_active_game(chat_id):
+            text = ('В этом чате игровая сессия уже начата,'
+                    'чтобы начать новую игру, необходимо дождаться оканчания текущей')
+            await self.tg_client.send_message(chat_id, text)
+        
         if self.players == []:
             text = (f'Чтобы начать играть, необходимо добавить себя в игру, нажмите /add \n'
                     f'затем можно начать играть /start_tour')
             await self.tg_client.send_message(chat_id, text)
-            return       
-
-        if self.is_list_players:
-            await self.game.get_list_players(chat_id, players)
-            self.is_list_players = False
+            return
         
+        if self.is_list_players:
+            await self.game.get_list_players(chat_id, self.players)
+            self.is_list_players = False
+
         await self.store.games.create_chat(chat_id)
-        await self.game.start_game(chat_id, players)
+
+        game = self.store.games.create_game(chat_id, self.players)
+        id_game = game.id
+
+        # self.active_games[chat_id] = game
+
+        await self.game.start_game(id_game, chat_id, self.players)
+
+    # async def start_tour(self, chat_id, players):
+    #     await self.game.start_tour(chat_id, players)
     
     async def handler_answer(self, сhat_id, user_id, text, id_choice_player):
         await self.game.answer(сhat_id, user_id, text, id_choice_player)

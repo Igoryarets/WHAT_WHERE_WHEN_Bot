@@ -1,7 +1,7 @@
 from datetime import datetime
 from marshmallow_dataclass import dataclass
 
-from sqlalchemy import Column, ForeignKey, Integer, Table, Text, func
+from sqlalchemy import Column, ForeignKey, Integer, Table, Text, Boolean, func
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
 
@@ -19,8 +19,10 @@ class Player:
 
 @dataclass
 class Game:
+    id: int
     chat_id: int
-    question_id: int
+    is_active: bool
+
 
 
 players_chats = Table(
@@ -68,16 +70,31 @@ class GameModel(db):
 
     id = Column(Integer(), primary_key=True)
     chat_id = Column(ForeignKey('chats.chat_id'), nullable=False)
-    question_id = Column(
-        Integer, ForeignKey('questions.id'), nullable=False)
+    # question_id = Column(
+    #     Integer, ForeignKey('questions.id'), nullable=False)
     start_time = Column(
         TIMESTAMP(timezone=True), server_default=func.now(), nullable=False
     )
     finish_time = Column(TIMESTAMP(timezone=True))
+
+    is_active = Column(Boolean, nullable=False)
 
     players: list['PlayerModel'] = relationship(
         'PlayerModel', secondary=players_games, back_populates='games'
     )
     chats: 'ChatModel' = relationship('ChatModel', back_populates='games')
 
+    tours = relationship('TourGame')
+
     # questions = relationship('QuestionModel')
+
+
+class TourGame(db):
+    __tablename__ = 'tours'
+
+    id = Column(Integer(), primary_key=True)
+    game_id = Column(Integer, ForeignKey('games.id'), nullable=False)
+    question_id = Column(
+        Integer, ForeignKey('questions.id'), nullable=False)
+
+    

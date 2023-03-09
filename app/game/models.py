@@ -24,6 +24,13 @@ class Game:
     is_active: bool
 
 
+@dataclass
+class Tour:
+    id: int
+    question_id: int
+    game_id: bool
+
+
 
 players_chats = Table(
     'players_chats',
@@ -44,7 +51,7 @@ class PlayerModel(db):
     __tablename__ = 'players'
 
     user_id = Column(Integer(), primary_key=True)
-    name = Column(Text(), nullable=False)   
+    name = Column(Text(), nullable=False)      
 
     chats = relationship(
         'ChatModel', secondary=players_chats, back_populates='players'

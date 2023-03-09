@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from app.base.base_accessor import BaseAccessor
-from app.game.models import PlayerModel, Player, GameModel, Game, ChatModel, players_chats, players_games
+from app.game.models import PlayerModel, Player, GameModel, Game, ChatModel, TourGame, Tour
 from sqlalchemy.orm import selectinload
 
 
@@ -20,10 +20,33 @@ class GameAccessor(BaseAccessor):
             except Exception:
                 await db.rollback()
                 raise
+            # await self.add_player_to_game()
         return Player(
             user_id=new_player.user_id,
             name=new_player.name)
 
+
+    # async def add_player_to_game(self, player, chat_id: int, game_id: int):
+    #     async with self.app.database.session() as db:
+
+    #         game = await db.get(GameModel, game_id)
+    #         chat = await db.get(ChatModel, chat_id)
+
+    #         pl = await db.get(
+    #             entity=PlayerModel,
+    #             ident=player['user_id'],
+    #             options=[
+    #                 selectinload(PlayerModel.games),
+    #                 selectinload(PlayerModel.chats),
+    #             ],
+    #         )
+    #         player.games.append(game)
+    #         player.chats.append(chat)
+            
+    #         await db.commit()
+
+    
+    
     async def get_player_by_id(self, user_id: int):
 
         async with self.app.database.session() as db:
@@ -94,7 +117,7 @@ class GameAccessor(BaseAccessor):
             for user_id in players:
                 player = await db.get(
                     entity=PlayerModel,
-                    ident=user_id['user_id'],
+                    ident=user_id[chat_id]['user_id'],
                     options=[
                         selectinload(PlayerModel.games),
                         selectinload(PlayerModel.chats),
@@ -129,17 +152,45 @@ class GameAccessor(BaseAccessor):
     async def get_active_game(self, chat_id):
         async with self.app.database.session() as db:
             try:
-                await db.execute(
+                act_game = await db.execute(
                         select(GameModel).where(
                             GameModel.chat_id == chat_id,
                             GameModel.is_active == True,
                         )
                     )
-                
+                (res, ) = act_game.first()                
             except TypeError:
                 return None
+        return Game(id=res.id, chat_id=res.chat_id, is_active=res.is_active)
 
-        return True
+    
+    async def get_tour_by_question_id(self, question_id):
+        async with self.app.database.session() as db:            
+            try:
+                tour = await db.execute(
+                    select(TourGame).where(
+                        TourGame.question_id == question_id
+                    )
+                )
+                (res, ) = tour.first()
+            except TypeError:
+                return None
+        return Tour(id=res.id, question_id=res.question_id, game_id=res.game_id)
+
+    
+    async def create_tour(self, question_id, game_id):
+        async with self.app.database.session() as db:
+            new_tour = TourGame(question_id=question_id, game_id=game_id)
+
+            db.add(new_tour)
+            try:
+                await db.commit()
+            except Exception:
+                await db.rollback()
+                raise
+        return Tour(id=new_tour.id, question_id=new_tour.question_id, game_id=new_tour.game_id)
+ 
+
     
     
     async def finish_game(self, id_game: int, ) -> None:
@@ -148,9 +199,18 @@ class GameAccessor(BaseAccessor):
                 update(GameModel)
                 .where(GameModel.id == id_game)
                 .values(finish_time=datetime.now(),
-                        is_acitive=False)
+                        is_active=False)
             )
+            await db.commit()
 
+    async def stop_game(self, chat_id):
+        async with self.app.database.session() as db:
+            await db.execute(
+                update(GameModel)
+                .where(GameModel.chat_id == chat_id)
+                .values(finish_time=datetime.now(),
+                        is_active=False)
+            )
             await db.commit()
 
     

@@ -8,7 +8,8 @@ class Game:
         self.store = store
         self.finish_count_round: int = 3
         self.start_count_round: dict = {}
-        self.choice_questions: bool = True
+        self.list_players: dict = {}
+        self.choice_questions: dict = {}
         self.tg_client = tg_client
         # self.callback_id_user: str = None
         self.answer_quest: str = None
@@ -46,10 +47,11 @@ class Game:
 
     async def get_list_players(self, chat_id, players):        
         text = 'В игре сегодня участвуют:\n'
-        i = 1
+        self.list_players = {chat_id: {'numb_player': 1}}
+
         for player in players:
-            text += f'{i}. {player[chat_id]["username"]}\n'
-            i += 1
+            text += f'{self.list_players[chat_id]["numb_player"]}. {player[chat_id]["username"]}\n'
+            self.list_players[chat_id]["numb_player"] += 1
         await self.tg_client.send_message(chat_id, text)
         return True
 
@@ -61,16 +63,19 @@ class Game:
         self.capitans[chat_id] = {
                                   'username': captain['username'],
                                   'user_id': captain['user_id']                                 
-                                 }        
+                                 }
+        self.choice_questions = {chat_id: {'choice_questions': True}}
+        
 
 
     async def start_tour(self, chat_id: int, players: list[dict], id_game: int) -> None:
-        while self.choice_questions:            
+
+        while self.choice_questions[chat_id]['choice_questions']:            
             random_id_quest = self.random_question()
             check = await self.check_uniq_question_in_game(random_id_quest)
             if check is True:
                 await self.store.games.create_tour(random_id_quest, id_game)
-                self.choice_questions = False
+                self.choice_questions[chat_id]['choice_questions'] = False
                 self.start_count_round = {chat_id: {'start_count_round': 1}}
                 self.start_count_round[chat_id]            
             

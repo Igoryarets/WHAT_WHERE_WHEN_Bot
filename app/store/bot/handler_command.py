@@ -140,15 +140,9 @@ class HandlerCommand:
 
     async def start_tour(self, chat_id, players):
         act_game = await self.store.games.get_active_game(chat_id)
-        # time_tour = False        
-        # await self.game.start_timer_tour(chat_id)
-        if act_game.is_active is True:
+        if act_game:
             id_act_game = act_game.id
             await self.game.start_tour(chat_id, players, id_act_game)
-        # elif time_tour is not True:
-        #     text = (f'Дождитесь окончания тура')
-        #     await self.tg_client.send_message(chat_id, text)
-        #     return
         else:
             text = (f'Чтобы начать очередной тур, необходимо начать игру')
             await self.tg_client.send_message(chat_id, text)

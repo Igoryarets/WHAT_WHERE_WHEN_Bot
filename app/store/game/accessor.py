@@ -79,7 +79,8 @@ class GameAccessor(BaseAccessor):
         pass
 
 
-    async def create_game(self, chat_id: int, players: list[dict]) -> Game:
+    # async def create_game(self, chat_id: int, players: list[dict]) -> Game:
+    async def create_game(self, chat_id: int) -> Game:
         game = GameModel(chat_id=chat_id, is_active=True)
         
         async with self.app.database.session() as db:
@@ -90,12 +91,13 @@ class GameAccessor(BaseAccessor):
                 await db.rollback()
                 raise
 
-            await self.add_players_to_game(players, chat_id, game.id)
+            # await self.add_players_to_game(players, chat_id, game.id)
 
         return Game(id=game.id, chat_id=game.chat_id, is_active=game.is_active)
 
 
-    async def add_players_to_game(self, players: list[dict], chat_id: int, game_id: int):
+    # async def add_players_to_game(self, players: list[dict], chat_id: int, game_id: int):
+    async def add_players_to_game(self, player: dict, chat_id: int, game_id: int):
         async with self.app.database.session() as db:
             
             # game = await db.execute(
@@ -112,19 +114,23 @@ class GameAccessor(BaseAccessor):
             # 
 
             game = await db.get(GameModel, game_id)
-            chat = await db.get(ChatModel, chat_id)        
+            chat = await db.get(ChatModel, chat_id)      
 
-            for user_id in players:
-                player = await db.get(
-                    entity=PlayerModel,
-                    ident=user_id[chat_id]['user_id'],
-                    options=[
-                        selectinload(PlayerModel.games),
-                        selectinload(PlayerModel.chats),
-                    ],
-                )
-                player.games.append(game)
-                player.chats.append(chat)
+            # for user_id in players:
+                # try:
+            player = await db.get(
+                entity=PlayerModel,
+                # ident=user_id[chat_id]['user_id'],
+                ident=player[chat_id]['user_id'],
+                options=[
+                    selectinload(PlayerModel.games),
+                    selectinload(PlayerModel.chats),
+                ],
+            )
+            player.games.append(game)
+            player.chats.append(chat)
+                # except KeyError:
+                #     pass
             
             await db.commit()
     

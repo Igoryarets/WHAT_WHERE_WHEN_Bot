@@ -38,6 +38,7 @@ class Game:
         return False
 
     async def choice_captain(self, players: list[dict], chat_id: int) -> dict:
+
         if len(players) == 1:
             text = f'Капитаном на эту игру назначается {players[0][chat_id]["username"]}'
             await self.tg_client.send_message(chat_id, text)
@@ -47,14 +48,14 @@ class Game:
         await self.tg_client.send_message(chat_id, text)
         return players[idx][chat_id]
 
+
     async def get_list_players(self, chat_id, players):        
         text = 'В игре сегодня участвуют:\n'
         self.list_players = {chat_id: {'numb_player': 1}}
-
         for player in players:
             text += f'{self.list_players[chat_id]["numb_player"]}. {player[chat_id]["username"]}\n'
             self.list_players[chat_id]["numb_player"] += 1
-        await self.tg_client.send_message(chat_id, text)
+        await self.tg_client.send_message(chat_id, text)        
         return True
 
     
@@ -66,12 +67,16 @@ class Game:
                                   'username': captain['username'],
                                   'user_id': captain['user_id']                                 
                                  }
-        self.start_count_round = {chat_id: {'start_count_round': 1}}
+        self.start_count_round = {chat_id: {'start_count_round': 0}}
         self.choice_questions = {chat_id: {'choice_questions': True}}
         self.timer_tour = {chat_id: {'timer': True}}
         self.score_bot = {chat_id: {'score_bot': 0}}
         self.score_team = {chat_id: {'score_team': 0}}
         self.get_answer = {chat_id: {'answer': True}}
+
+        text = (f'Количество туров: {self.finish_count_round}.\n'
+                f'Вы соревнуетесь с ботом, на каждый ответ дается 1 минута')
+        await self.tg_client.send_message(chat_id, text)
         
 
 
@@ -87,6 +92,9 @@ class Game:
             await self.tg_client.send_message(chat_id, text)
             return
 
+        if await self.finish_game(id_game, chat_id):            
+            return
+
         while self.choice_questions[chat_id]['choice_questions']: 
                    
             random_id_quest = self.random_question()
@@ -95,14 +103,13 @@ class Game:
                 await self.store.games.create_tour(random_id_quest, id_game)
                 self.choice_questions[chat_id]['choice_questions'] = False         
                 self.get_answer[chat_id]['answer'] = False
+                self.start_count_round[chat_id]['start_count_round'] += 1
                 quest = await self.get_question_from_db(chat_id, random_id_quest)
                 self.answer_quest = quest.answer
-                
+                print(f'!!!!!!!!!!!!!!!{self.answer_quest}!!!!!!!!!!!!!!!!!!!!')                
                 timer = await self.start_timer_tour(chat_id)                
-                
                 self.timer_tour[chat_id]['timer'] = False
                 if timer:
-
                     text = (f'Капитан {self.capitans[chat_id]["username"]} выберите игрока,\n'
                                         f'который ответит на заданный вопрос')
                     keyboard = {'inline_keyboard': [[{
@@ -111,9 +118,8 @@ class Game:
                     
                     await self.tg_client.send_message(chat_id, text, keyboard)
                     self.timer_tour[chat_id]['timer'] = True                    
-                await self.finish_game(id_game, chat_id)
-        self.choice_questions[chat_id]['choice_questions'] = True
-            
+                # await self.finish_game(id_game, chat_id)
+        self.choice_questions[chat_id]['choice_questions'] = True           
               
 
     async def answer(self, chat_id, user_id, text, id_callback_user):
@@ -125,14 +131,16 @@ class Game:
         else:
             answer_from_player = text.split()            
 
-            if self.answer_quest in answer_from_player:
-                text = 'Ответ верный, поздравляем !!!'
+            if self.answer_quest in answer_from_player:                
                 self.score_team[chat_id]['score_team'] += 1
+                text = (f'Ответ верный, поздравляем !!!\n'
+                        f'Текущий счет {self.score_team[chat_id]["score_team"]}:{self.score_bot[chat_id]["score_bot"]}')
                 await self.tg_client.send_message(chat_id, text)
                 return True
-            else:
-                text = f'К сожалению вы ответили неверно, правильный ответ {self.answer_quest}'
+            else:               
                 self.score_bot[chat_id]['score_bot'] += 1
+                text = (f'К сожалению вы ответили неверно, правильный ответ {self.answer_quest}'
+                        f'Текущий счет {self.score_team[chat_id]["score_team"]}:{self.score_bot[chat_id]["score_bot"]}')
                 await self.tg_client.send_message(chat_id, text)
                 return True
         
@@ -142,7 +150,7 @@ class Game:
         question = await self.store.quizzes.get_questions(question_id)
         text = (f'Раунд №{self.start_count_round[chat_id]["start_count_round"]} \n'
                 f'Внимание вопрос: \n{question.question}')
-        self.start_count_round[chat_id]['start_count_round'] += 1
+        # self.start_count_round[chat_id]['start_count_round'] += 1
         await self.tg_client.send_message(chat_id, text)
         return question
         
@@ -159,6 +167,8 @@ class Game:
 
 
     async def finish_game(self, id_game, chat_id):
+        # if self.get_answer[chat_id]['answer'] is not True:
+        #     return
         if self.start_count_round[chat_id]['start_count_round'] == self.finish_count_round:
             text = 'Конец игры'
             await self.tg_client.send_message(chat_id, text)
@@ -173,13 +183,14 @@ class Game:
             text = (f'К сожалению ваша команда проиграла со счетом '
                     f'{self.score_team[chat_id]["score_team"]}:{self.score_bot[chat_id]["score_bot"]}')
             await self.tg_client.send_message(chat_id, text)
+            return
         
         text = (f'Поздравляем !!!! Ваша команда одержала победу со счетом '
                 f'{self.score_team[chat_id]["score_team"]}:{self.score_bot[chat_id]["score_bot"]}')
         await self.tg_client.send_message(chat_id, text)
         
 
-    async def start_timer_tour(self, chat_id, seconds=60):
+    async def start_timer_tour(self, chat_id, seconds=10):
         self.timer_tour = {chat_id: {'timer': False}}        
         while seconds:           
             await sleep(1)
@@ -194,4 +205,6 @@ class Game:
 
     async def stop_game(self, chat_id):
         # self.start_count_round[chat_id]['start_count_round'] = 0
+        text = 'Текущая игра остановлена, можно начинать новую'
+        await self.tg_client.send_message(chat_id, text)
         await self.store.games.stop_game(chat_id)

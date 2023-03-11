@@ -99,7 +99,8 @@ class Game:
                     keyboard = {'inline_keyboard': [[{
                         'text': player.name,
                         'callback_data': player.user_id}] for player in players]}
-                    
+
+                   
                     await self.tg_client.send_message(chat_id, text, keyboard)
                     state.timer_tour = True
                     await self.store.games.update_state_timer(id_game, state.timer_tour)               
@@ -155,9 +156,11 @@ class Game:
         
         
 
-    async def captain_choice_player(self, user_id: int, username_callback_user: str, chat_id: int, game_id):
+    async def captain_choice_player(self, user_id: int, id_callback_user: int, chat_id: int, game_id):
         
         state = await self.store.games.get_score_state(game_id)
+
+        username_callback_user = await self.store.games.get_player_by_id(id_callback_user)
         
         if state.captain_id != user_id:
             text = (f'Выбрать игрока, который будет отвечать, должен капитан.\n'
@@ -165,7 +168,7 @@ class Game:
                     f'id: {state.captain_id}')
             await self.tg_client.send_message(chat_id, text)
         else:
-            text = f'Отвечать будет {username_callback_user}'
+            text = f'Отвечать будет {username_callback_user.name}'
             await self.tg_client.send_message(chat_id, text)
 
 

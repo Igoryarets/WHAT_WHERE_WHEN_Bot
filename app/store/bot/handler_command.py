@@ -31,8 +31,7 @@ class HandlerCommand:
             text = update_object.callback_query.message.text
             user_id = update_object.callback_query.from_.id
             user_name = update_object.callback_query.from_.first_name
-            id_callback_user = update_object.callback_query.message.reply_markup.inline_keyboard[0][0].callback_data
-            username_callback_user = update_object.callback_query.message.reply_markup.inline_keyboard[0][0].text
+            id_callback_user = update_object.callback_query.data
         else:
             chat_id = update_object.message.chat.id
             text = update_object.message.text
@@ -60,7 +59,7 @@ class HandlerCommand:
         elif text.startswith('/answer'):
             await self.handler_answer(chat_id, user_id, text, self.id_callback_user)
         else:
-            await self.handler_inline(user_id, id_callback_user, username_callback_user, chat_id)
+            await self.handler_inline(user_id, id_callback_user, chat_id)
         
 
     async def handler_start(self, chat_id, text, keyboard):
@@ -69,8 +68,23 @@ class HandlerCommand:
 
     
     async def help(self, chat_id):
-        text = ('Допустимые команды:\n'
+        text = ('Алгоритм запуска и создания игры:\n'
+                '1. Если Вы новый пользователь, то необходимо зарегестрироваться: команда /registration;\n'
+                '2. Чтобы начать играть необходимо создать игровую сессию: команда /create_game;\n'
+                '3. Далее необходимо создать команду игроков "Знатоков": команда /add;\n'
+                '4. Для инициализации начального состояния игры (создания раундов, вопросов, списка игроков, выбора капитана)'
+                'необходимо выполнить команду: /start_game;\n'
+                '5. Затем необходимо выполнить команду: /start_tour, Вы получите вопрос, на который в течении 1-ой минуты '
+                'необходимо будет ответить;\n'
+                '6. Ответ ожидается в таком формате: /answer вводите пробел и ответ;\n'
+                '7. Далее, чтобы начать новый тур вводите снова команду: /start_tour;\n'
+                '8. После всех сыгранных туров, бот выведет оканчательный результат;\n'
+                'Примечание: бот не читает чат, в чате возможно только одна игровая сессия !!!\n'
+                'Если в данном чате игра была не доиграна, и нужно начать новую, то необходимо'
+                ' выполнить команду: /stop_game\n'
+                'Допустимые команды:\n'
                 '/registration \n'
+                '/create_game \n'
                 '/start_tour\n'
                 '/start_game\n'
                 '/stop_game\n'
@@ -112,7 +126,7 @@ class HandlerCommand:
 
         await self.store.games.add_players_to_game(player, chat_id, id_act_game)
 
-        text = 'Добро пожаловать на игру !!!'
+        text = f'Добро пожаловать на игру {player[chat_id]["username"]} !!!'
         await self.tg_client.send_message(chat_id, text)
 
     async def create_game(self, chat_id):
@@ -181,8 +195,7 @@ class HandlerCommand:
         
         await self.game.answer(chat_id, user_id, text, id_choice_player, id_act_game)
 
-    async def handler_inline(self, user_id, id_choice_player: str, username_callback_user: str, chat_id: int):
-        self.id_callback_user = id_choice_player
+    async def handler_inline(self, user_id, id_choice_player: str, chat_id: int):
         act_game = await self.store.games.get_active_game(chat_id)
         id_act_game = act_game.id
-        await self.game.captain_choice_player(user_id, username_callback_user, chat_id, id_act_game)
+        await self.game.captain_choice_player(user_id, id_choice_player, chat_id, id_act_game)

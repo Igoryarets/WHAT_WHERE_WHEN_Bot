@@ -46,12 +46,20 @@ class ReplyMarkupData:
         unknown = EXCLUDE
 
 
-@dataclass
-class ReplyMarkup:
-    inline_keyboard: List[List[ReplyMarkupData]]
+# @dataclass
+# class ReplyMarkup:
+#     # # inline_keyboard: List[List[ReplyMarkupData]]
+#     # data: int
 
-    class Meta:
-        unknown = EXCLUDE
+#     class Meta:
+#         unknown = EXCLUDE
+
+# @dataclass
+# class CallBackQuery:
+#     data: int
+
+#     class Meta:
+#         unknown = EXCLUDE
 
 
 @dataclass
@@ -60,7 +68,8 @@ class Message:
     from_: MessageFrom = field(metadata={"data_key": "from"})
     chat: Chat
     text: Optional[str] = None
-    reply_markup: Optional[ReplyMarkup] = None
+    # reply_markup: Optional[ReplyMarkupData] = None
+    # callback_query: Optional[CallBackQuery] = None
 
     class Meta:
         unknown = EXCLUDE
@@ -71,6 +80,7 @@ class Callback:
     id: int
     from_: CallbackFrom = field(metadata={"data_key": "from"})
     message: Message
+    data: int
 
 
     class Meta:

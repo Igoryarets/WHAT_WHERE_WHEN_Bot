@@ -6,19 +6,12 @@ from app.store import Store
 import logging
 
 
-COMMANDS_BOT = {
-    'start': '/start',
-    'registaration': '/registration',
-    'help': '/help',
-    'stop': '/stop,'
-}
-
-
 KEYBOARD = {
     'keyboard_start': {
         'keyboard': [['/registration','/create_game', '/start_game', '/stop_game', '/start_tour', '/help', '/add']],
-        'one_time_keyboard': True,
-         'resize_keyboard': True},
+        'one_time_keyboard': False,
+        'is_persistent': True,
+        'resize_keyboard': True},
     
 }
 
@@ -28,10 +21,7 @@ class HandlerCommand:
         self.tg_client = TgClient(token)
         self.game = Game(store, self.tg_client)
         self.store = store
-        # self.players = []
         self.id_callback_user: str =None
-        # self.is_list_players: bool = True
-        # self.games: dict = {}
 
 
     async def handler_command(self, update_object: UpdateObj):
@@ -135,33 +125,37 @@ class HandlerCommand:
         await self.store.games.create_chat(chat_id)
         await self.store.games.create_game(chat_id)
 
+        text = ('Игровая сессия создана, сейчас необходимо создать команду знатоков'
+                ' при помощи команды /add, затем -> /start_game затем -> /start_tour')
+
+        await self.tg_client.send_message(chat_id, text)
+
     
     async def start_game(self, chat_id):
-        # active_game_in_chat = await self.store.games.get_active_game(chat_id)
-        # if active_game_in_chat:
-        #     text = ('В этом чате игровая сессия уже начата,'
-        #             'чтобы начать новую игру, необходимо дождаться оканчания текущей')
-        #     await self.tg_client.send_message(chat_id, text)
-        #     return
-        
+
+        active_game_in_chat = await self.store.games.get_active_game_start(chat_id)
+        if active_game_in_chat:
+            text = ('В этом чате игровая сессия уже начата,'
+                    'чтобы начать новую игру, необходимо дождаться оканчания текущей')
+            await self.tg_client.send_message(chat_id, text)
+            return
+
+       
         act_game = await self.store.games.get_active_game(chat_id)
         id_act_game = act_game.id  
-        players = await self.store.games.get_players_to_game(id_act_game)
-        if not players:
+        players = await self.store.games.get_players_to_game(id_act_game)        
+        
+        if players.players == []:
             text = (f'Чтобы начать играть, необходимо добавить себя в игру, нажмите /add \n'
                     f'затем можно начать играть /start_tour')
             await self.tg_client.send_message(chat_id, text)
             return
         
-        if players:
+        if players.players:
             await self.game.get_list_players(chat_id, players.players)
-     
-        
-        act_game = await self.store.games.get_active_game(chat_id)
-        id_act_game = act_game.id        
-        players = await self.store.games.get_players_to_game(id_act_game)
-
         await self.game.start_game(chat_id, players.players, id_act_game)
+
+        await self.store.games.update_start_game(id_act_game)
 
 
     async def stop_game(self, chat_id):
@@ -170,7 +164,7 @@ class HandlerCommand:
 
     async def start_tour(self, chat_id):
         act_game = await self.store.games.get_active_game(chat_id)
-        if act_game.is_active is True:
+        if act_game.is_active_create_game is True:
             id_act_game = act_game.id
             players = await self.store.games.get_players_to_game(id_act_game)
             

@@ -1,8 +1,8 @@
 """Added required tables
 
-Revision ID: c68f55d8ad42
+Revision ID: b2aa94516364
 Revises: 
-Create Date: 2023-03-11 01:59:47.767988
+Create Date: 2023-03-11 20:23:39.609608
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'c68f55d8ad42'
+revision = 'b2aa94516364'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -44,7 +44,8 @@ def upgrade() -> None:
     sa.Column('chat_id', sa.Integer(), nullable=False),
     sa.Column('start_time', postgresql.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('finish_time', postgresql.TIMESTAMP(timezone=True), nullable=True),
-    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('is_active_create_game', sa.Boolean(), nullable=False),
+    sa.Column('is_active_start_game', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['chat_id'], ['chats.chat_id'], ),
     sa.PrimaryKeyConstraint('id')
     )

@@ -21,7 +21,8 @@ class Player:
 class Game:
     id: int
     chat_id: int
-    is_active: bool
+    is_active_create_game: bool
+    is_active_start_game: bool
 
 @dataclass
 class Score:
@@ -98,7 +99,8 @@ class GameModel(db):
     )
     finish_time = Column(TIMESTAMP(timezone=True))
 
-    is_active = Column(Boolean, nullable=False)
+    is_active_create_game = Column(Boolean, nullable=False)
+    is_active_start_game = Column(Boolean, nullable=False)
 
     players: list['PlayerModel'] = relationship(
         'PlayerModel', secondary=players_games, back_populates='games'

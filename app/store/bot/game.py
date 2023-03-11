@@ -2,6 +2,7 @@ from random import randint
 from app.store import Store
 from app.store.tg_api.tg_api import TgClient
 from asyncio import sleep
+import logging
 
 class Game:
     def __init__(self, store: Store, tg_client: TgClient):
@@ -88,9 +89,8 @@ class Game:
                                                                state.get_answer,
                                                                state.timer_tour)
 
-                quest = await self.get_question_from_db(chat_id, random_id_quest, state)
-                self.answer_quest = quest.answer
-                print(f'!!!!!!!!!!!!!!!{self.answer_quest}!!!!!!!!!!!!!!!!!!!!')                
+                await self.get_question_from_db(chat_id, random_id_quest, state)
+                               
                 timer = await self.start_timer_tour(chat_id)                
 
                 if timer:
@@ -108,28 +108,28 @@ class Game:
               
               
 
-    async def answer(self, chat_id, user_id, text, id_callback_user, game_id):
-
-        
+    async def answer(self, chat_id, user_id, text, id_callback_user, game_id):        
         state = await self.store.games.get_score_state(game_id)
-
         if int(id_callback_user) != user_id:
             text = 'Отвечать должен тот игрок, которого выбрал капитан'
             await self.tg_client.send_message(chat_id, text)
             return
         else:
-            answer_from_player = text.split()            
+            answer_from_player = text.split()
+            answer_quest = await self.store.games.get_answer_by_game_tour(game_id) 
 
-            if self.answer_quest in answer_from_player:                
+            logging.info(f'Answer from db: {answer_quest}')          
+
+            if answer_quest in answer_from_player:                
                 state.score_team += 1
                 text = (f'Ответ верный, поздравляем !!!\n'
-                        f'Текущий счет {state.score_team}:{state.score_bot}')
+                        f'Текущий счет:\n Знатоки {state.score_team}: Бот {state.score_bot}')
                 await self.tg_client.send_message(chat_id, text)
                 return True
             else:               
                 state.score_bot += 1
-                text = (f'К сожалению вы ответили неверно, правильный ответ {self.answer_quest}'
-                        f'Текущий счет {state.score_team}:{state.score_bot}')
+                text = (f'К сожалению вы ответили неверно, правильный ответ:\n {answer_quest}\n'
+                        f'Текущий счет:\n Знатоки {state.score_team}: Бот {state.score_bot}')
                 await self.tg_client.send_message(chat_id, text)
             
             state.get_answer = True
@@ -152,7 +152,7 @@ class Game:
         text = (f'Раунд №{state.start_round} \n'
                 f'Внимание вопрос: \n{question.question}')
         await self.tg_client.send_message(chat_id, text)
-        return question
+        
         
 
     async def captain_choice_player(self, user_id: int, username_callback_user: str, chat_id: int, game_id):

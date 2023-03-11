@@ -23,6 +23,20 @@ class Game:
     chat_id: int
     is_active: bool
 
+@dataclass
+class Score:
+    captain_name: str
+    captain_id: int
+    game_id: int
+    start_round: int
+    finish_round: int
+    choice_questions: bool
+    timer_tour: bool
+    get_answer: bool
+    score_bot: int
+    score_team: int
+    winner: str
+
 
 @dataclass
 class Tour:
@@ -92,9 +106,26 @@ class GameModel(db):
     chats: 'ChatModel' = relationship('ChatModel', back_populates='games')
 
     tours = relationship('TourGame')
+    scores = relationship('ScoreModel')
 
     # questions = relationship('QuestionModel')
 
+
+class ScoreModel(db):
+    __tablename__ = 'scores'
+
+    id = Column(Integer(), primary_key=True)
+    captain_name = Column(Text(), nullable=False)
+    captain_id = Column(Integer(), nullable=False)
+    game_id = Column(Integer(), ForeignKey('games.id'), nullable=False)
+    start_round = Column(Integer(), nullable=False)
+    finish_round = Column(Integer(), nullable=False)
+    choice_questions = Column(Boolean, nullable=False)
+    timer_tour = Column(Boolean, nullable=False)
+    get_answer = Column(Boolean, nullable=False)
+    score_bot = Column(Integer(), nullable=False)
+    score_team = Column(Integer(), nullable=False)
+    winner = Column(Text(), nullable=False)
 
 class TourGame(db):
     __tablename__ = 'tours'

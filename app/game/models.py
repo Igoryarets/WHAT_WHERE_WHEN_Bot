@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from marshmallow_dataclass import dataclass
 
 from sqlalchemy import Column, ForeignKey, Integer, Table, Text, Boolean, func
@@ -29,6 +30,7 @@ class Score:
     captain_name: str
     captain_id: int
     game_id: int
+    callback_id: Optional[int]
     start_round: int
     finish_round: int
     choice_questions: bool
@@ -120,6 +122,7 @@ class ScoreModel(db):
     captain_name = Column(Text(), nullable=False)
     captain_id = Column(Integer(), nullable=False)
     game_id = Column(Integer(), ForeignKey('games.id'), nullable=False)
+    callback_id = Column(Integer())
     start_round = Column(Integer(), nullable=False)
     finish_round = Column(Integer(), nullable=False)
     choice_questions = Column(Boolean, nullable=False)

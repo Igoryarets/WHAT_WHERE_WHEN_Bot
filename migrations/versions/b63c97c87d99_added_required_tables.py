@@ -1,8 +1,8 @@
 """Added required tables
 
-Revision ID: b2aa94516364
+Revision ID: b63c97c87d99
 Revises: 
-Create Date: 2023-03-11 20:23:39.609608
+Create Date: 2023-03-12 11:31:28.443363
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'b2aa94516364'
+revision = 'b63c97c87d99'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -66,6 +66,7 @@ def upgrade() -> None:
     sa.Column('captain_name', sa.Text(), nullable=False),
     sa.Column('captain_id', sa.Integer(), nullable=False),
     sa.Column('game_id', sa.Integer(), nullable=False),
+    sa.Column('callback_id', sa.Integer(), nullable=True),
     sa.Column('start_round', sa.Integer(), nullable=False),
     sa.Column('finish_round', sa.Integer(), nullable=False),
     sa.Column('choice_questions', sa.Boolean(), nullable=False),

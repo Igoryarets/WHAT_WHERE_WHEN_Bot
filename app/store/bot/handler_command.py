@@ -4,6 +4,7 @@ from app.store.tg_api.dcs import UpdateObj
 from app.store.bot.game import Game
 from app.store import Store
 import logging
+from app.game.models import Player
 
 
 KEYBOARD = {
@@ -21,22 +22,23 @@ class HandlerCommand:
         self.tg_client = TgClient(token)
         self.game = Game(store, self.tg_client)
         self.store = store
-        self.id_callback_user: str =None
+        # self.id_callback_user: str =None
 
 
     async def handler_command(self, update_object: UpdateObj):
 
         if update_object.callback_query:
-            chat_id = update_object.callback_query.message.chat.id
-            text = update_object.callback_query.message.text
-            user_id = update_object.callback_query.from_.id
-            user_name = update_object.callback_query.from_.first_name
-            id_callback_user = update_object.callback_query.data
+            chat_id: int = update_object.callback_query.message.chat.id
+            text: str = update_object.callback_query.message.text
+            user_id: int = update_object.callback_query.from_.id
+            user_name: str = update_object.callback_query.from_.first_name
+            # self.id_callback_user = update_object.callback_query.data
+        
         else:
-            chat_id = update_object.message.chat.id
-            text = update_object.message.text
-            user_id = update_object.message.from_.id
-            user_name = update_object.message.from_.first_name       
+            chat_id: int = update_object.message.chat.id
+            text: str = update_object.message.text
+            user_id: int = update_object.message.from_.id
+            user_name: str = update_object.message.from_.first_name       
         
         if text == '/start':
             global KEYBOARD
@@ -57,17 +59,18 @@ class HandlerCommand:
         elif text.startswith('/add'):
             await self.create_team(chat_id, user_id, user_name)
         elif text.startswith('/answer'):
-            await self.handler_answer(chat_id, user_id, text, self.id_callback_user)
+            # await self.handler_answer(chat_id, user_id, text, self.id_callback_user)
+            await self.handler_answer(chat_id, user_id, text)
         else:
-            await self.handler_inline(user_id, id_callback_user, chat_id)
-        
+            # await self.handler_inline(user_id, self.id_callback_user, chat_id)
+            await self.handler_inline(user_id, update_object, chat_id)
 
-    async def handler_start(self, chat_id, text, keyboard):
+    async def handler_start(self, chat_id: int, text: str, keyboard) -> None:
         text = 'Здравствуйте, я бот для игры "Что, Где, Когда?"'
         await self.tg_client.send_message(chat_id, text, keyboard)
 
     
-    async def help(self, chat_id):
+    async def help(self, chat_id: int) -> None:
         text = ('Алгоритм запуска и создания игры:\n'
                 '1. Если Вы новый пользователь, то необходимо зарегестрироваться: команда /registration;\n'
                 '2. Чтобы начать играть необходимо создать игровую сессию: команда /create_game;\n'
@@ -94,7 +97,7 @@ class HandlerCommand:
         await self.tg_client.send_message(chat_id, text)
 
     
-    async def handler_registration_user(self, user_id: int, user_name: str, chat_id: str):
+    async def handler_registration_user(self, user_id: int, user_name: str, chat_id: str) -> Player | None:
 
         player = await self.store.games.get_player_by_id(user_id)
         if player:
@@ -107,7 +110,7 @@ class HandlerCommand:
             await self.tg_client.send_message(chat_id, text)
             return player
 
-    async def create_team(self, chat_id, user_id, user_name):
+    async def create_team(self, chat_id: int, user_id: int, user_name: str) -> None:
         player = await self.store.games.get_player_by_id(user_id)
         if not player:
             text = 'Вы должны пройти регистрацию'
@@ -129,7 +132,7 @@ class HandlerCommand:
         text = f'Добро пожаловать на игру {player[chat_id]["username"]} !!!'
         await self.tg_client.send_message(chat_id, text)
 
-    async def create_game(self, chat_id):
+    async def create_game(self, chat_id: int) -> None:
         active_game_in_chat = await self.store.games.get_active_game(chat_id)
         if active_game_in_chat:
             text = ('В этом чате игровая сессия уже начата,'
@@ -145,7 +148,7 @@ class HandlerCommand:
         await self.tg_client.send_message(chat_id, text)
 
     
-    async def start_game(self, chat_id):
+    async def start_game(self, chat_id: int) -> None:
 
         active_game_in_chat = await self.store.games.get_active_game_start(chat_id)
         if active_game_in_chat:
@@ -157,8 +160,8 @@ class HandlerCommand:
        
         act_game = await self.store.games.get_active_game(chat_id)
         id_act_game = act_game.id  
-        players = await self.store.games.get_players_to_game(id_act_game)        
-        
+        players = await self.store.games.get_players_to_game(id_act_game)
+
         if players.players == []:
             text = (f'Чтобы начать играть, необходимо добавить себя в игру, нажмите /add \n'
                     f'затем можно начать играть /start_tour')
@@ -172,11 +175,11 @@ class HandlerCommand:
         await self.store.games.update_start_game(id_act_game)
 
 
-    async def stop_game(self, chat_id):
+    async def stop_game(self, chat_id: int) -> None:
         await self.game.stop_game(chat_id)
 
 
-    async def start_tour(self, chat_id):
+    async def start_tour(self, chat_id: int) -> None:
         act_game = await self.store.games.get_active_game(chat_id)
         if act_game.is_active_create_game is True:
             id_act_game = act_game.id
@@ -189,13 +192,19 @@ class HandlerCommand:
             await self.tg_client.send_message(chat_id, text)
             return
     
-    async def handler_answer(self, chat_id, user_id, text, id_choice_player):
+    async def handler_answer(self, chat_id: int, user_id: int, text: str) -> None:
         act_game = await self.store.games.get_active_game(chat_id)
         id_act_game = act_game.id
-        
-        await self.game.answer(chat_id, user_id, text, id_choice_player, id_act_game)
+        state = await self.store.games.get_score_state(id_act_game)
+        await self.game.answer(chat_id, user_id, text, state.callback_id, id_act_game)
 
-    async def handler_inline(self, user_id, id_choice_player: str, chat_id: int):
+    
+    async def handler_inline(self, user_id: int, update_object: UpdateObj, chat_id: int) -> None:
         act_game = await self.store.games.get_active_game(chat_id)
         id_act_game = act_game.id
-        await self.game.captain_choice_player(user_id, id_choice_player, chat_id, id_act_game)
+
+        id_callback_user = update_object.callback_query.data
+        await self.store.games.update_state_callback(id_act_game, id_callback_user)
+        state = await self.store.games.get_score_state(id_act_game)        
+        
+        await self.game.captain_choice_player(user_id, state.callback_id, chat_id, id_act_game)

@@ -223,6 +223,7 @@ class GameAccessor(BaseAccessor):
                                 captain_name,
                                 captain_id,
                                 game_id,
+                                callback_id=None,
                                 start_round=0,
                                 finish_round=3,
                                 choice_questions=True,
@@ -237,6 +238,7 @@ class GameAccessor(BaseAccessor):
                 captain_name=captain_name,
                 captain_id=captain_id,
                 game_id=game_id,
+                callback_id=callback_id,
                 start_round=start_round,
                 finish_round=finish_round,
                 choice_questions=choice_questions,
@@ -256,6 +258,7 @@ class GameAccessor(BaseAccessor):
                 captain_name=start_state.captain_name,
                 captain_id=start_state.captain_id,
                 game_id=start_state.game_id,
+                callback_id=start_state.callback_id,
                 start_round=start_state.start_round,
                 finish_round=start_state.finish_round,
                 choice_questions=start_state.choice_questions,
@@ -364,6 +367,7 @@ class GameAccessor(BaseAccessor):
                 captain_name=res.captain_name,
                 captain_id=res.captain_id,
                 game_id=res.game_id,
+                callback_id=res.callback_id,
                 start_round=res.start_round,
                 finish_round=res.finish_round,
                 choice_questions=res.choice_questions,
@@ -373,6 +377,16 @@ class GameAccessor(BaseAccessor):
                 score_team=res.score_team,
                 winner=res.winner
             )
+
+    async def update_state_callback(self, game_id, callback_id):
+        async with self.app.database.session() as db:
+            await db.execute(
+                update(ScoreModel)
+                .where(ScoreModel.game_id == game_id)
+                .values(callback_id=callback_id)
+
+            )
+            await db.commit()
         
 
 

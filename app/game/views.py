@@ -12,11 +12,7 @@ class ChatListView(View):
 
 
 class GameListView(View):
-    
-    async def get(self):
-        data = {'title': 'hello'}
-        print('check GET /game/')
-        return json_response(data=data)
+    pass
 
 
 class PlayerListView(View):

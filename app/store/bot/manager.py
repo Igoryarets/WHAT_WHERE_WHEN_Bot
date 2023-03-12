@@ -16,18 +16,18 @@ from app.store.bot.worker import Worker
 if typing.TYPE_CHECKING:
     from app.web.app import Application
 
+
 class StartBot(BaseAccessor):
     def __init__(self, app: "Application", *args, **kwargs):
         super().__init__(app, *args, **kwargs)
         self.poller: Optional[Poller] = None
         self.worker: Optional[Worker] = None
         self.queue = asyncio.Queue()
-        self.token = '1954880325:AAH-Ai3eahA1o6g_BZk3gdI5QeNjx3EgH5I' # create env and add token to env !!!!!!!!!!!!!!!
+        self.token = self.app.config.bot.token        
         self.count_concurency = 2
 
-
     async def connect(self, app: "Application"):
-        logging.info('bot has been started')
+        logging.info('BOT START')
         self.poller = Poller(self.token, self.queue)
         self.worker = Worker(self.token, self.queue, self.count_concurency, app.store)       
         try:

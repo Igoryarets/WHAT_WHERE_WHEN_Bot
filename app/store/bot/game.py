@@ -1,11 +1,13 @@
-from random import randint
-from app.store import Store
-from app.store.tg_api.tg_api import TgClient
-from asyncio import sleep
 import logging
+from asyncio import sleep
+from random import randint
+
+from sqlalchemy.orm.collections import InstrumentedList
 
 from app.game.models import GameModel, PlayerModel, Score
-from sqlalchemy.orm.collections import InstrumentedList
+from app.store import Store
+from app.store.tg_api.tg_api import TgClient
+
 
 class Game:
     def __init__(self, store: Store, tg_client: TgClient):
@@ -64,9 +66,7 @@ class Game:
     async def start_tour(self, chat_id: int, players: list[dict], id_game: int) -> None:
 
         state = await self.store.games.get_score_state(id_game)
-
-        print('TTTTTTTTTTTTTTT', type(state))
-        
+       
         if state.timer_tour is not True:
             text = (f'Дождитесь окончания тура')
             await self.tg_client.send_message(chat_id, text)

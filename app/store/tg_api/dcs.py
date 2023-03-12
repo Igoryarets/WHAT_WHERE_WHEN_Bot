@@ -1,8 +1,8 @@
 from dataclasses import field
-from typing import ClassVar, Type, List, Optional
+from typing import ClassVar, List, Optional, Type
 
+from marshmallow import EXCLUDE, Schema
 from marshmallow_dataclass import dataclass
-from marshmallow import Schema, EXCLUDE
 
 
 @dataclass

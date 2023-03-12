@@ -1,11 +1,11 @@
 import asyncio
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from alembic import context
 from app.store.database.sqlalchemy_base import db
 
 DATABASE_URL = "postgresql+asyncpg://postgres:postgres@127.0.0.1/Tg_Bot_CHGK"

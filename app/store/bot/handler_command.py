@@ -1,11 +1,10 @@
-from app.store.tg_api.tg_api import TgClient
-from app.store.tg_api.dcs import UpdateObj
-
-from app.store.bot.game import Game
-from app.store import Store
 import logging
-from app.game.models import Player
 
+from app.game.models import Player
+from app.store import Store
+from app.store.bot.game import Game
+from app.store.tg_api.dcs import UpdateObj
+from app.store.tg_api.tg_api import TgClient
 
 KEYBOARD = {
     'keyboard_start': {

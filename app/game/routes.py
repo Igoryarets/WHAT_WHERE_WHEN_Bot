@@ -1,6 +1,6 @@
 import typing
 
-from .views import ChatListView, GameListView, PlayerListView 
+from .views import ChatListView, GameListView, PlayerListView
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application

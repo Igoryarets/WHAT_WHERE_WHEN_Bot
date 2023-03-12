@@ -4,11 +4,8 @@ from typing import Optional
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-
 from app.game.models import TourGame
-
 from app.store.database.sqlalchemy_base import db
-
 
 # @dataclass
 # class Theme:

@@ -1,7 +1,8 @@
+import csv
 import typing
 from logging import getLogger
 from pathlib import Path
-import csv
+
 if typing.TYPE_CHECKING:
     from app.web.app import Application
 

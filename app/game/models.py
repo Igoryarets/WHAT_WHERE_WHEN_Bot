@@ -1,14 +1,15 @@
 from datetime import datetime
 from typing import Optional
-from marshmallow_dataclass import dataclass
 
-from sqlalchemy import Column, ForeignKey, Integer, Table, Text, Boolean, func
+from marshmallow_dataclass import dataclass
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Table, Text, func
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
 
+from app.store.database.sqlalchemy_base import db
+
 # from app.quiz.models import QuestionModel
 
-from app.store.database.sqlalchemy_base import db
 
 
 
@@ -19,11 +20,20 @@ class Player:
 
 
 @dataclass
+class GameList:
+    id: int
+    chat_id: int
+    is_active_create_game: bool
+    is_active_start_game: bool
+    players: list[Player]
+
+@dataclass
 class Game:
     id: int
     chat_id: int
     is_active_create_game: bool
     is_active_start_game: bool
+
 
 @dataclass
 class Score:
@@ -46,6 +56,13 @@ class Tour:
     id: int
     question_id: int
     game_id: bool
+
+@dataclass
+class Chat:
+    chat_id: int
+
+    class Config:
+        orm_mode = True
 
 
 

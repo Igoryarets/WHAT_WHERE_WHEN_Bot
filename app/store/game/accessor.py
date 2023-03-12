@@ -1,18 +1,20 @@
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import select, update, desc
+from sqlalchemy import desc, select, update
 from sqlalchemy.exc import IntegrityError
-from app.quiz.models import QuestionModel
-from app.base.base_accessor import BaseAccessor
-from app.game.models import PlayerModel, Player, GameModel, Game, ChatModel, TourGame, Tour, ScoreModel, Score
 from sqlalchemy.orm import selectinload
 
+from app.base.base_accessor import BaseAccessor
+from app.game.models import (Chat, ChatModel, Game, GameList, GameModel,
+                             Player, PlayerModel, Score, ScoreModel, Tour,
+                             TourGame)
+from app.quiz.models import QuestionModel
 
 
 class GameAccessor(BaseAccessor):
     
-    async def create_player(self, user_id: int, name: str):
+    async def create_player(self, user_id: int, name: str) -> Player:
         new_player = PlayerModel(user_id=user_id, name=name)
         async with self.app.database.session() as db:
             db.add(new_player)
@@ -26,7 +28,7 @@ class GameAccessor(BaseAccessor):
             name=new_player.name)
 
        
-    async def get_player_by_id(self, user_id: int):
+    async def get_player_by_id(self, user_id: int) -> Player:
 
         async with self.app.database.session() as db:
             player = await db.execute(
@@ -41,11 +43,18 @@ class GameAccessor(BaseAccessor):
         return Player(user_id=res.user_id, name=res.name)
     
     
-    async def get_list_players(self):
-        pass
+    async def list_players(self) -> list[Player]:
+        async with self.app.database.session() as db:
+            result = await db.execute(
+                select(PlayerModel).options(selectinload(PlayerModel.chats))
+            )
+            players = result.scalars().all()
+            list_players = [Player(player.user_id, player.name) for player in players]
+        
+        return list_players
 
 
-    async def create_chat(self, chat_id):
+    async def create_chat(self, chat_id: int) -> None:
         try:
             async with self.app.database.session() as db:
                 db.add(ChatModel(chat_id=chat_id))
@@ -54,8 +63,14 @@ class GameAccessor(BaseAccessor):
             pass
 
 
-    async def get_list_chat(self):
-        pass
+    async def list_chats(self) -> list[Chat]:
+        async with self.app.database.session() as db:
+            result = await db.execute(select(ChatModel))
+            chats = result.scalars().all()
+            list_chat = [Chat(chat.chat_id) for chat in chats]
+        
+        return list_chat
+    
     
     async def create_game(self, chat_id: int) -> Game:
         game = GameModel(chat_id=chat_id,
@@ -102,8 +117,22 @@ class GameAccessor(BaseAccessor):
             return players               
              
             
-    async def get_list_game(self):
-        pass
+    async def list_games(self) -> list[GameList]:
+        async with self.app.database.session() as db:
+            result = await db.execute(
+                select(GameModel).options(
+                    selectinload(GameModel.players),
+                )
+            )
+            games = result.scalars().all()
+            list_games = [GameList(
+                                game.id,
+                                game.chat_id,
+                                game.is_active_create_game,
+                                game.is_active_start_game,
+                                game.players) for game in games]
+        
+        return list_games
 
     
     async def get_active_game(self, chat_id):
@@ -388,8 +417,3 @@ class GameAccessor(BaseAccessor):
             )
             await db.commit()
         
-
-
-    
-
-

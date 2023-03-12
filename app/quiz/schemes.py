@@ -1,7 +1,6 @@
 from marshmallow import Schema, fields
 from marshmallow.validate import Length
 
-
 # class ThemeSchema(Schema):
 #     id = fields.Int(required=False)
 #     title = fields.Str(required=True)

@@ -2,7 +2,7 @@ from marshmallow import Schema, fields
 
 
 class ChatSchema(Schema):
-    tg_chat_id = fields.Int(required=True)
+    chat_id = fields.Int(required=True)
 
 
 class ChatListSchema(Schema):
@@ -10,7 +10,7 @@ class ChatListSchema(Schema):
 
 
 class PlayerSchema(Schema):
-    tg_user_id = fields.Int(required=True)
+    user_id = fields.Int(required=True)
     name = fields.Str(required=True)
     balance = fields.Int(required=True)
     # chats = fields.List(fields.Nested(ChatSchema()))
@@ -22,9 +22,9 @@ class PlayerListSchema(Schema):
 
 class GameSchema(Schema):
     id = fields.Int(required=True)
-    tg_chat_id = fields.Int(required=True)
+    chat_id = fields.Int(required=True)
     start_time = fields.DateTime(required=True)
-    end_time = fields.DateTime(required=False)
+    finish_time = fields.DateTime(required=False)
     players = fields.List(fields.Nested(PlayerSchema()))
 
 

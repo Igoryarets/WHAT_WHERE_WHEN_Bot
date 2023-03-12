@@ -1,9 +1,8 @@
 import asyncio
-from asyncio import Task
-
-from typing import Optional
 import logging
-from asyncio import CancelledError
+from asyncio import CancelledError, Task
+from typing import Optional
+
 from app.store.tg_api.tg_api import TgClient
 
 

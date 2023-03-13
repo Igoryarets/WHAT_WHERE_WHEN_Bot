@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Optional
 
 from marshmallow_dataclass import dataclass
@@ -7,10 +6,6 @@ from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
 
 from app.store.database.sqlalchemy_base import db
-
-# from app.quiz.models import QuestionModel
-
-
 
 
 @dataclass
@@ -26,6 +21,7 @@ class GameList:
     is_active_create_game: bool
     is_active_start_game: bool
     players: list[Player]
+
 
 @dataclass
 class Game:
@@ -57,13 +53,13 @@ class Tour:
     question_id: int
     game_id: bool
 
+
 @dataclass
 class Chat:
     chat_id: int
 
     class Config:
         orm_mode = True
-
 
 
 players_chats = Table(
@@ -85,7 +81,7 @@ class PlayerModel(db):
     __tablename__ = 'players'
 
     user_id = Column(Integer(), primary_key=True)
-    name = Column(Text(), nullable=False)      
+    name = Column(Text(), nullable=False)
 
     chats = relationship(
         'ChatModel', secondary=players_chats, back_populates='players'
@@ -103,7 +99,8 @@ class ChatModel(db):
     players: list['PlayerModel'] = relationship(
         'PlayerModel', secondary=players_chats, back_populates='chats'
     )
-    games: list['GameModel'] = relationship('GameModel', back_populates='chats')
+    games: list['GameModel'] = relationship(
+        'GameModel', back_populates='chats')
 
 
 class GameModel(db):
@@ -111,8 +108,6 @@ class GameModel(db):
 
     id = Column(Integer(), primary_key=True)
     chat_id = Column(ForeignKey('chats.chat_id'), nullable=False)
-    # question_id = Column(
-    #     Integer, ForeignKey('questions.id'), nullable=False)
     start_time = Column(
         TIMESTAMP(timezone=True), server_default=func.now(), nullable=False
     )
@@ -128,8 +123,6 @@ class GameModel(db):
 
     tours = relationship('TourGame')
     scores = relationship('ScoreModel')
-
-    # questions = relationship('QuestionModel')
 
 
 class ScoreModel(db):
@@ -149,6 +142,7 @@ class ScoreModel(db):
     score_team = Column(Integer(), nullable=False)
     winner = Column(Text(), nullable=False)
 
+
 class TourGame(db):
     __tablename__ = 'tours'
 
@@ -156,5 +150,3 @@ class TourGame(db):
     game_id = Column(Integer, ForeignKey('games.id'), nullable=False)
     question_id = Column(
         Integer, ForeignKey('questions.id'), nullable=False)
-
-    

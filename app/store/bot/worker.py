@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 import logging
 from asyncio import CancelledError
 from typing import List
@@ -17,16 +16,13 @@ class Worker:
                 concurrent_workers: int,
                 store: Store):
 
-        
         self.queue = queue
         self.handler = HandlerCommand(token, store)
         self.concurrent_workers = concurrent_workers
         self._tasks: List[asyncio.Task] = []
 
-
     async def handle_update(self, update_object: UpdateObj):
-            await self.handler.handler_command(update_object) 
-
+        await self.handler.handler_command(update_object)
 
     async def _worker(self):
         while True:
@@ -42,7 +38,10 @@ class Worker:
 
     async def start(self):
         try:
-            self._tasks = [asyncio.create_task(self._worker()).add_done_callback(self.done_callback) for _ in range(self.concurrent_workers)]
+            self._tasks = [
+                asyncio.create_task(self._worker()).add_done_callback(
+                    self.done_callback) for _ in range(
+                        self.concurrent_workers)]
         except CancelledError:
             pass
 

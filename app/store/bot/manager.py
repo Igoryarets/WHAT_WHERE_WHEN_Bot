@@ -5,7 +5,7 @@ from asyncio import CancelledError
 from typing import Optional
 
 from app.base.base_accessor import BaseAccessor
-from app.store import Store
+# from app.store import Store
 from app.store.bot.poller import Poller
 from app.store.bot.worker import Worker
 
@@ -23,15 +23,17 @@ class StartBot(BaseAccessor):
         self.poller: Optional[Poller] = None
         self.worker: Optional[Worker] = None
         self.queue = asyncio.Queue()
-        self.token = self.app.config.bot.token        
+        self.token = self.app.config.bot.token
         self.count_concurency = 2
 
     async def connect(self, app: "Application"):
         logging.info('BOT START')
         self.poller = Poller(self.token, self.queue)
-        self.worker = Worker(self.token, self.queue, self.count_concurency, app.store)       
+        self.worker = Worker(
+            self.token, self.queue, self.count_concurency, app.store)
         try:
-            asyncio.create_task(self.start()).add_done_callback(self.done_callback)
+            asyncio.create_task(
+                self.start()).add_done_callback(self.done_callback)
         except CancelledError:
             pass
 
@@ -40,9 +42,8 @@ class StartBot(BaseAccessor):
         await self.worker.start()
 
     def done_callback(self, future: asyncio.Future):
-        if future.exception():            
+        if future.exception():
             logging.exception(future.exception())
-            
 
     async def disconnect(self, app: "Application"):
         pass

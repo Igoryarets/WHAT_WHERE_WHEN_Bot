@@ -1,4 +1,4 @@
-from aiohttp_apispec import request_schema, response_schema
+from aiohttp_apispec import response_schema
 
 from app.web.app import View
 from app.web.utils import json_response

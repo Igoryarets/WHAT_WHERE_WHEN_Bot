@@ -1,7 +1,7 @@
-import csv
+# import csv
 import typing
 from logging import getLogger
-from pathlib import Path
+# from pathlib import Path
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
@@ -12,7 +12,7 @@ class BaseAccessor:
         self.app = app
         self.logger = getLogger("accessor")
         app.on_startup.append(self.connect)
-        app.on_cleanup.append(self.disconnect)       
+        app.on_cleanup.append(self.disconnect)
 
     async def connect(self, app: "Application"):
         # BASE_DIR = Path(__file__).parent.parent

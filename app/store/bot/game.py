@@ -15,12 +15,13 @@ class Game:
         self.finish_count_round: int = 3
         self.tg_client = tg_client
 
-    def random_question(self) -> int:
-        # questions = await self.store.quizzes.list_questions()
-        # count_questions = len(questions)
-        # choice_id_questions = randint(1, count_questions - 1)
-        choice_id_questions = randint(1, 26000)
-        return choice_id_questions
+    async def random_question(self) -> int:
+        questions = await self.store.quizzes.list_questions()
+        count_questions = len(questions)
+        choice_id_questions = randint(1, count_questions - 1)
+        ch_id = questions[choice_id_questions].id
+        # choice_id_questions = randint(1, 26000)
+        return ch_id
 
     async def check_uniq_question_in_game(self, question_id: int) -> bool:
         check_question = await self.store.games.get_tour_by_question_id(
@@ -80,7 +81,7 @@ class Game:
             return
 
         while state.choice_questions:
-            random_id_quest = self.random_question()
+            random_id_quest = await self.random_question()
             check = await self.check_uniq_question_in_game(random_id_quest)
             if check is True:
                 await self.store.games.create_tour(random_id_quest, id_game)
@@ -97,7 +98,7 @@ class Game:
 
                 answer_quest = await self.store.games.get_answer_by_game_tour(id_game)            
 
-                logging.info(f'!!!!!!!!!!!!!!!! Answer from db: {answer_quest}!!!!!!!!!!!!!!!!!')
+                logging.info(f'!!!!!!!!!!!!!!!! Answer from db: {answer_quest.lower()}!!!!!!!!!!!!!!!!!')
 
                 timer_tour = await self.start_timer_tour(chat_id, id_game)
                 if timer_tour:
@@ -116,6 +117,7 @@ class Game:
 
                     timer_answer = await self.start_timer_answer(chat_id)
                     state = await self.store.games.get_score_state(id_game)
+                    await sleep(1)
                     if timer_answer is True and state.get_answer is not True:
                         state.get_answer = True
                         state.start_round += 1
@@ -131,6 +133,7 @@ class Game:
                                                   state.choice_questions)
 
                         text = (f'Вы не успели ответить, очко отдается боту\n'
+                                f'Правильный ответ: {answer_quest.lower()}\n'
                                 f'Текущий счет:\n Знатоки {state.score_team}: Бот {state.score_bot}')
                         await self.tg_client.send_message(chat_id, text)
 
@@ -154,16 +157,17 @@ class Game:
             return
         else:
             answer_from_player = text.split()
-            answer_quest = await self.store.games.get_answer_by_game_tour(game_id)            
+            answer_quest = await self.store.games.get_answer_by_game_tour(game_id)          
+
             if answer_quest.lower() in answer_from_player:
                 state.score_team += 1
                 text = (f'Ответ верный, поздравляем !!!\n'
                         f'Текущий счет:\n Знатоки {state.score_team}: Бот {state.score_bot}')
                 await self.tg_client.send_message(chat_id, text)
-                return True
+                
             else:
                 state.score_bot += 1
-                text = (f'К сожалению вы ответили неверно, правильный ответ:\n {answer_quest}\n'
+                text = (f'К сожалению вы ответили неверно, правильный ответ:\n {answer_quest.lower()}\n'
                         f'Текущий счет:\n Знатоки {state.score_team}: Бот {state.score_bot}')
                 await self.tg_client.send_message(chat_id, text)
 

@@ -183,8 +183,8 @@ class QuizAccessor(BaseAccessor):
                 list_questions.append(
                     Question(
                         id=question.id,
-                        title=question.title,
-                        answers=await self.get_answers(question.id)
+                        question=question.question,
+                        answer= question.answer,
                     )
                 )
             return list_questions

@@ -1,16 +1,16 @@
 """Added required tables
 
-Revision ID: b63c97c87d99
+Revision ID: 371a5852ac80
 Revises: 
-Create Date: 2023-03-12 11:31:28.443363
+Create Date: 2023-03-14 08:05:45.947060
 
 """
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'b63c97c87d99'
+revision = '371a5852ac80'
 down_revision = None
 branch_labels = None
 depends_on = None

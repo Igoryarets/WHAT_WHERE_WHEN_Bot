@@ -12,8 +12,6 @@ class ChatListSchema(Schema):
 class PlayerSchema(Schema):
     user_id = fields.Int(required=True)
     name = fields.Str(required=True)
-    balance = fields.Int(required=True)
-    # chats = fields.List(fields.Nested(ChatSchema()))
 
 
 class PlayerListSchema(Schema):

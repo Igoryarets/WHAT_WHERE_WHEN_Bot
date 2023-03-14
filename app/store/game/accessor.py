@@ -13,7 +13,6 @@ from app.quiz.models import QuestionModel
 
 
 class GameAccessor(BaseAccessor):
-    
     async def create_player(self, user_id: int, name: str) -> Player:
         new_player = PlayerModel(user_id=user_id, name=name)
         async with self.app.database.session() as db:
@@ -27,8 +26,7 @@ class GameAccessor(BaseAccessor):
             user_id=new_player.user_id,
             name=new_player.name)
 
-       
-    async def get_player_by_id(self, user_id: int) -> Player:
+    async def get_player_by_id(self, user_id: int) -> Player | None:
 
         async with self.app.database.session() as db:
             player = await db.execute(
@@ -41,18 +39,16 @@ class GameAccessor(BaseAccessor):
             except TypeError:
                 return None
         return Player(user_id=res.user_id, name=res.name)
-    
-    
+
     async def list_players(self) -> list[Player]:
         async with self.app.database.session() as db:
             result = await db.execute(
                 select(PlayerModel).options(selectinload(PlayerModel.chats))
             )
             players = result.scalars().all()
-            list_players = [Player(player.user_id, player.name) for player in players]
-        
+            list_players = [
+                Player(player.user_id, player.name) for player in players]
         return list_players
-
 
     async def create_chat(self, chat_id: int) -> None:
         try:
@@ -62,41 +58,37 @@ class GameAccessor(BaseAccessor):
         except IntegrityError:
             pass
 
-
     async def list_chats(self) -> list[Chat]:
         async with self.app.database.session() as db:
             result = await db.execute(select(ChatModel))
             chats = result.scalars().all()
             list_chat = [Chat(chat.chat_id) for chat in chats]
-        
         return list_chat
-    
-    
+
     async def create_game(self, chat_id: int) -> Game:
         game = GameModel(chat_id=chat_id,
                          is_active_create_game=True,
                          is_active_start_game=False)
-        
         async with self.app.database.session() as db:
             db.add(game)
             try:
                 await db.commit()
             except Exception:
                 await db.rollback()
-                raise            
+                raise
 
         return Game(id=game.id,
                     chat_id=game.chat_id,
                     is_active_create_game=game.is_active_create_game,
                     is_active_start_game=game.is_active_start_game)
 
-    
-    async def add_players_to_game(self, player: dict, chat_id: int, game_id: int):
+    async def add_players_to_game(self,
+                                  player: dict,
+                                  chat_id: int,
+                                  game_id: int) -> None:
         async with self.app.database.session() as db:
-            
             game = await db.get(GameModel, game_id)
-            chat = await db.get(ChatModel, chat_id)      
-
+            chat = await db.get(ChatModel, chat_id)
             player = await db.get(
                 entity=PlayerModel,
 
@@ -108,14 +100,14 @@ class GameAccessor(BaseAccessor):
             )
             player.games.append(game)
             player.chats.append(chat)
-               
             await db.commit()
 
-    async def get_players_to_game(self, game_id: int):
+    async def get_players_to_game(self, game_id: int) -> list[GameModel]:
         async with self.app.database.session() as db:
-            players = await db.get(GameModel, game_id, [selectinload(GameModel.players)])
-            return players               
-             
+            players = await db.get(
+                GameModel, game_id, [selectinload(GameModel.players)])
+            return players
+
     async def list_games(self) -> list[GameList]:
         async with self.app.database.session() as db:
             result = await db.execute(
@@ -130,10 +122,8 @@ class GameAccessor(BaseAccessor):
                                 game.is_active_create_game,
                                 game.is_active_start_game,
                                 game.players) for game in games]
-        
         return list_games
 
-    
     async def get_active_game(self, chat_id):
         async with self.app.database.session() as db:
             try:
@@ -143,14 +133,13 @@ class GameAccessor(BaseAccessor):
                             GameModel.is_active_create_game == True,
                         )
                     )
-                (res, ) = act_game.first()                
+                (res, ) = act_game.first()
             except TypeError:
                 return None
         return Game(id=res.id,
                     chat_id=res.chat_id,
                     is_active_create_game=res.is_active_create_game,
                     is_active_start_game=res.is_active_start_game)
-
 
     async def get_active_game_start(self, chat_id):
         async with self.app.database.session() as db:
@@ -161,21 +150,22 @@ class GameAccessor(BaseAccessor):
                             GameModel.is_active_start_game == True,
                         )
                     )
-                (res, ) = act_game.first()                
+                (res, ) = act_game.first()
             except TypeError:
                 return None
         return Game(id=res.id,
                     chat_id=res.chat_id,
                     is_active_create_game=res.is_active_create_game,
                     is_active_start_game=res.is_active_start_game)
-    
+
     async def get_answer_by_game_tour(self, game_id):
         async with self.app.database.session() as db:
             try:
                 query = await db.execute(
                     select(QuestionModel).join(
                         TourGame).where(
-                            TourGame.game_id == game_id).order_by(desc(TourGame.id))
+                            TourGame.game_id == game_id).order_by(
+                                desc(TourGame.id))
                 )
                 (res, ) = query.first()
 
@@ -184,7 +174,7 @@ class GameAccessor(BaseAccessor):
         return res.answer
 
     async def get_tour_by_question_id(self, question_id):
-        async with self.app.database.session() as db:            
+        async with self.app.database.session() as db:
             try:
                 tour = await db.execute(
                     select(TourGame).where(
@@ -194,8 +184,9 @@ class GameAccessor(BaseAccessor):
                 (res, ) = tour.first()
             except TypeError:
                 return None
-        return Tour(id=res.id, question_id=res.question_id, game_id=res.game_id)
-
+        return Tour(id=res.id,
+                    question_id=res.question_id,
+                    game_id=res.game_id)
 
     async def create_tour(self, question_id, game_id):
         async with self.app.database.session() as db:
@@ -207,7 +198,9 @@ class GameAccessor(BaseAccessor):
             except Exception:
                 await db.rollback()
                 raise
-        return Tour(id=new_tour.id, question_id=new_tour.question_id, game_id=new_tour.game_id)
+        return Tour(id=new_tour.id,
+                    question_id=new_tour.question_id,
+                    game_id=new_tour.game_id)
 
     async def finish_game(self, id_game: int) -> None:
         async with self.app.database.session() as db:
@@ -220,7 +213,7 @@ class GameAccessor(BaseAccessor):
             )
             await db.commit()
 
-    async def update_start_game(self, id_game):
+    async def update_start_game(self, id_game: int) -> None:
         async with self.app.database.session() as db:
             await db.execute(
                 update(GameModel)
@@ -229,8 +222,7 @@ class GameAccessor(BaseAccessor):
             )
             await db.commit()
 
-
-    async def get_game_stop(self, game_id):
+    async def get_game_stop(self, game_id: int) -> Game | None:
         async with self.app.database.session() as db:
             try:
                 act_game = await db.execute(
@@ -250,19 +242,19 @@ class GameAccessor(BaseAccessor):
 
     async def create_start_score_state(
                                 self,
-                                captain_name,
-                                captain_id,
-                                game_id,
-                                callback_id=None,
-                                start_round=0,
-                                finish_round=3,
-                                choice_questions=True,
-                                timer_tour=True,
-                                get_answer=True,
-                                score_bot=0,
-                                score_team=0,
-                                winner= ''
-                                ):
+                                captain_name: str,
+                                captain_id: int,
+                                game_id: int,
+                                callback_id: Optional[int] = None,
+                                start_round: int = 0,
+                                finish_round: int = 3,
+                                choice_questions: bool = True,
+                                timer_tour: bool = True,
+                                get_answer: bool = True,
+                                score_bot: int = 0,
+                                score_team: int = 0,
+                                winner: str = ''
+                                ) -> Score:
         async with self.app.database.session() as db:
             start_state = ScoreModel(
                 captain_name=captain_name,
@@ -301,62 +293,48 @@ class GameAccessor(BaseAccessor):
 
     async def update_score_state(
                             self,
-                            game_id,
-                            start_round,
-                            # finish_round,
-                            # choice_questions,
-                            # timer_tour,
-                            get_answer,
-                            score_bot,
-                            score_team,
-                            choice_questions):
-                            # winner):
+                            game_id: int,
+                            start_round: int,
+                            get_answer: bool,
+                            score_bot: int,
+                            score_team: int,
+                            choice_questions: bool) -> None:
+
         async with self.app.database.session() as db:
             await db.execute(
                 update(ScoreModel)
                 .where(ScoreModel.game_id == game_id)
                 .values(start_round=start_round,
-                        # finish_round=finish_round,
-                        # choice_questions=choice_questions,
-                        # timer_tour=timer_tour,
                         get_answer=get_answer,
                         score_bot=score_bot,
                         score_team=score_team,
                         choice_questions=choice_questions)
-                        # winner=winner)
             )
             await db.commit()
 
-
     async def update_finish_score_state(
                             self,
-                            game_id,
-                            start_round,
-                            # finish_round,
-                            # choice_questions,
-                            # timer_tour,
-                            # get_answer,
-                            score_bot,
-                            score_team,
-                            # choice_questions,
-                            winner):
+                            game_id: int,
+                            start_round: int,
+                            score_bot: int,
+                            score_team: int,
+                            winner: str) -> None:
         async with self.app.database.session() as db:
             await db.execute(
                 update(ScoreModel)
                 .where(ScoreModel.game_id == game_id)
                 .values(start_round=start_round,
-                        # finish_round=finish_round,
-                        # choice_questions=choice_questions,
-                        # timer_tour=timer_tour,
-                        # get_answer=get_answer,
                         score_bot=score_bot,
                         score_team=score_team,
-                        # choice_questions=choice_questions,
                         winner=winner)
             )
             await db.commit()
 
-    async def update_score_state_bool(self, game_id, choice_questions, get_answer, timer_tour):
+    async def update_score_state_bool(self,
+                                      game_id: int,
+                                      choice_questions: bool,
+                                      get_answer: bool,
+                                      timer_tour: bool):
         async with self.app.database.session() as db:
             await db.execute(
                 update(ScoreModel)
@@ -369,8 +347,7 @@ class GameAccessor(BaseAccessor):
             )
             await db.commit()
 
-
-    async def update_state_timer(self, game_id, timer_tour):
+    async def update_state_timer(self, game_id: int, timer_tour: bool) -> None:
         async with self.app.database.session() as db:
             await db.execute(
                 update(ScoreModel)
@@ -380,8 +357,7 @@ class GameAccessor(BaseAccessor):
             )
             await db.commit()
 
-
-    async def get_score_state(self, game_id):
+    async def get_score_state(self, game_id: int) -> Score | None:
         async with self.app.database.session() as db:
             try:
                 score_state = await db.execute(
@@ -407,7 +383,9 @@ class GameAccessor(BaseAccessor):
                 winner=res.winner
             )
 
-    async def update_state_callback(self, game_id, callback_id):
+    async def update_state_callback(self,
+                                    game_id: int,
+                                    callback_id: int) -> None:
         async with self.app.database.session() as db:
             await db.execute(
                 update(ScoreModel)
@@ -416,4 +394,3 @@ class GameAccessor(BaseAccessor):
 
             )
             await db.commit()
-        

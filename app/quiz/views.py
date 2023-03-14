@@ -12,7 +12,7 @@ class QuestionAddView(AuthRequiredMixin, View):
     @response_schema(QuestionSchema)
     async def post(self):
         data = await self.request.json()
-        answer = data['answer']        
+        answer = data['answer']
         title = data['title']
 
         question = await self.store.quizzes.create_question(

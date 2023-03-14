@@ -5,12 +5,8 @@ from asyncio import CancelledError
 from typing import Optional
 
 from app.base.base_accessor import BaseAccessor
-# from app.store import Store
 from app.store.bot.poller import Poller
 from app.store.bot.worker import Worker
-
-# from .poller import Poller
-# from .worker import Worker
 
 
 if typing.TYPE_CHECKING:

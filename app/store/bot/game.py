@@ -98,7 +98,7 @@ class Game:
 
                 answer_quest = await self.store.games.get_answer_by_game_tour(id_game)            
 
-                logging.info(f'!!!!!!!!!!!!!!!! Answer from db: {answer_quest.lower()}!!!!!!!!!!!!!!!!!')
+                logging.info(f'Answer from db: {answer_quest.lower()}')
 
                 timer_tour = await self.start_timer_tour(chat_id, id_game)
                 if timer_tour:
@@ -113,7 +113,8 @@ class Game:
                         'callback_data': player.user_id}] for player in players]}
                     await self.tg_client.send_message(chat_id, text, keyboard)
                     state.timer_tour = True
-                    await self.store.games.update_state_timer(id_game, state.timer_tour)
+                    await self.store.games.update_state_timer(
+                        id_game, state.timer_tour)
 
                     timer_answer = await self.start_timer_answer(chat_id)
                     state = await self.store.games.get_score_state(id_game)
@@ -134,15 +135,21 @@ class Game:
 
                         text = (f'Вы не успели ответить, очко отдается боту\n'
                                 f'Правильный ответ: {answer_quest.lower()}\n'
-                                f'Текущий счет:\n Знатоки {state.score_team}: Бот {state.score_bot}')
+                                f'Текущий счет:\n Знатоки {state.score_team}:'
+                                f' Бот {state.score_bot}')
                         await self.tg_client.send_message(chat_id, text)
 
                         state.choice_questions = False
             state.choice_questions = False
 
-    async def answer(self, chat_id: int, user_id: int, text: str, id_callback_user: int, game_id: int) -> bool | None:
-        state = await self.store.games.get_score_state(game_id)
+    async def answer(self,
+                     chat_id: int,
+                     user_id: int,
+                     text: str,
+                     id_callback_user: int,
+                     game_id: int) -> bool | None:
 
+        state = await self.store.games.get_score_state(game_id)
         if state.get_answer is True:
             return
 
@@ -157,18 +164,22 @@ class Game:
             return
         else:
             answer_from_player = text.split()
-            answer_quest = await self.store.games.get_answer_by_game_tour(game_id)          
+            answer_quest = await self.store.games.get_answer_by_game_tour(
+                game_id)
 
             if answer_quest.lower() in answer_from_player:
                 state.score_team += 1
                 text = (f'Ответ верный, поздравляем !!!\n'
-                        f'Текущий счет:\n Знатоки {state.score_team}: Бот {state.score_bot}')
+                        f'Текущий счет:\n Знатоки {state.score_team}:'
+                        f' Бот {state.score_bot}')
                 await self.tg_client.send_message(chat_id, text)
-                
+
             else:
                 state.score_bot += 1
-                text = (f'К сожалению вы ответили неверно, правильный ответ:\n {answer_quest.lower()}\n'
-                        f'Текущий счет:\n Знатоки {state.score_team}: Бот {state.score_bot}')
+                text = (f'К сожалению вы ответили неверно,'
+                        f' правильный ответ:\n {answer_quest.lower()}\n'
+                        f'Текущий счет:\n Знатоки {state.score_team}:'
+                        f' Бот {state.score_bot}')
                 await self.tg_client.send_message(chat_id, text)
 
             state.get_answer = True
@@ -200,18 +211,24 @@ class Game:
                                     game_id: int) -> None:
 
         state = await self.store.games.get_score_state(game_id)
-        username_callback_user = await self.store.games.get_player_by_id(id_callback_user)
+        username_callback_user = await self.store.games.get_player_by_id(
+            id_callback_user)
 
         if state.captain_id != user_id:
-            text = (f'Выбрать игрока, который будет отвечать, должен капитан.\n'
-                    f'Напоминаем, что капитаном является:\n{state.captain_name}\n'
+            text = (f'Выбрать игрока, который будет отвечать,'
+                    ' должен капитан.\n'
+                    f'Напоминаем, что капитаном является:\n'
+                    f'{state.captain_name}\n'
                     f'id: {state.captain_id}')
             await self.tg_client.send_message(chat_id, text)
         else:
             text = f'Отвечать будет {username_callback_user.name}'
             await self.tg_client.send_message(chat_id, text)
 
-    async def finish_game(self, id_game: int, chat_id: int, state: Score) -> bool:
+    async def finish_game(self,
+                          id_game: int,
+                          chat_id: int,
+                          state: Score) -> bool:
         if state.start_round == self.finish_count_round:
             text = 'Конец игры'
             await self.tg_client.send_message(chat_id, text)
@@ -219,7 +236,10 @@ class Game:
             await self.store.games.finish_game(id_game)
             return True
 
-    async def get_score_game(self, chat_id: int, id_game: int, state: Score) -> None:
+    async def get_score_game(self,
+                             chat_id: int,
+                             id_game: int,
+                             state: Score) -> None:
         if state.score_bot > state.score_team:
             text = (f'К сожалению ваша команда проиграла со счетом '
                     f'{state.score_team}:{state.score_bot}')
@@ -246,7 +266,10 @@ class Game:
             )
         await self.tg_client.send_message(chat_id, text)
 
-    async def start_timer_tour(self, chat_id: int, id_game: int, seconds: int = 60) -> bool:
+    async def start_timer_tour(self,
+                               chat_id: int,
+                               id_game: int,
+                               seconds: int = 60) -> bool:
 
         while seconds:
             await sleep(1)

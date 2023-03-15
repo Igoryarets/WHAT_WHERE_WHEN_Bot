@@ -200,7 +200,7 @@ class Game:
                                    question_id: int,
                                    state: Score) -> None:
 
-        question = await self.store.quizzes.get_questions(question_id)
+        question = await self.store.quizzes.get_question(question_id)
         text = (f'Раунд №{state.start_round} \n'
                 f'Внимание вопрос: \n{question.question}')
         await self.tg_client.send_message(chat_id, text)

@@ -28,3 +28,22 @@ class GameSchema(Schema):
 
 class GameListSchema(Schema):
     games = fields.List(fields.Nested(GameSchema()))
+
+
+class ScoreSchema(Schema):
+    captain_name = fields.Str()
+    captain_id = fields.Int()
+    game_id = fields.Int()
+    # callback_id = fields.Int()
+    # start_round = fields.Int()
+    # finish_round = fields.Int()
+    # choice_questions = fields.Boolean()
+    # timer_tour = fields.Boolean()
+    # get_answer = fields.Boolean()
+    score_bot = fields.Int()
+    score_team = fields.Int()
+    winner = fields.Str()
+
+
+class ScoreListSchema(Schema):
+    scores = fields.List(fields.Nested(ScoreSchema()))

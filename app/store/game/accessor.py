@@ -124,6 +124,22 @@ class GameAccessor(BaseAccessor):
                                 game.players) for game in games]
         return list_games
 
+    async def active_games_api(self, chat_id) -> list[GameList]:
+        async with self.app.database.session() as db:
+            result = await db.execute(
+                select(GameModel).where(GameModel.chat_id == chat_id).options(
+                    selectinload(GameModel.players),
+                )
+            )
+            (game, ) = result.first()
+
+        return GameList(
+                        game.id,
+                        game.chat_id,
+                        game.is_active_create_game,
+                        game.is_active_start_game,
+                        game.players)
+
     async def get_active_game(self, chat_id):
         async with self.app.database.session() as db:
             try:
@@ -339,7 +355,7 @@ class GameAccessor(BaseAccessor):
             await db.execute(
                 update(ScoreModel)
                 .where(ScoreModel.game_id == game_id)
-                .values(                        
+                .values(
                         choice_questions=choice_questions,
                         timer_tour=timer_tour,
                         get_answer=get_answer)

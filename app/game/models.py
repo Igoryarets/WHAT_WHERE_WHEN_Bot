@@ -1,7 +1,8 @@
 from typing import Optional
 
 from marshmallow_dataclass import dataclass
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Table, Text, func, BigInteger
+from sqlalchemy import (BigInteger, Boolean, Column, ForeignKey, Integer,
+                        Table, Text, func)
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
 

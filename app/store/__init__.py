@@ -17,6 +17,8 @@ class Store:
         self.admins = AdminAccessor(app)
         self.games = GameAccessor(app)
         self.bots_manager = StartBot(app)
+        # default create admin
+        app.on_startup.append(self.admins.create_admin_after_start_app)
 
 
 def setup_store(app: "Application"):

@@ -31,7 +31,22 @@ class QuizAccessor(BaseAccessor):
                         answer=answer,
             )
 
-    async def get_questions(self, question_id: int) -> Question | None:
+    async def create_questions(self, reader):
+        async with self.app.database.session() as db:
+            questions = []
+            for r in reader:
+                question = QuestionModel(
+                    question=r['question'], answer=r['answer'])
+                questions.append(question)
+
+            db.add_all(questions)
+            try:
+                await db.commit()
+            except Exception:
+                await db.rollback()
+                raise
+
+    async def get_question(self, question_id: int) -> Question | None:
         async with self.app.database.session() as db:
             question = await db.execute(
                 select(QuestionModel).where(

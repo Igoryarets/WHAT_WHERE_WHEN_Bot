@@ -8,7 +8,6 @@ from app.base.base_accessor import BaseAccessor
 from app.store.bot.poller import Poller
 from app.store.bot.worker import Worker
 
-
 if typing.TYPE_CHECKING:
     from app.web.app import Application
 

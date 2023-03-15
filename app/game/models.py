@@ -1,7 +1,7 @@
 from typing import Optional
 
 from marshmallow_dataclass import dataclass
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Table, Text, func
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Table, Text, func, BigInteger
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
 
@@ -80,7 +80,7 @@ players_games = Table(
 class PlayerModel(db):
     __tablename__ = 'players'
 
-    user_id = Column(Integer(), primary_key=True)
+    user_id = Column(BigInteger(), primary_key=True)
     name = Column(Text(), nullable=False)
 
     chats = relationship(

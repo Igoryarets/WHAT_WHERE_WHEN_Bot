@@ -7,8 +7,9 @@ from app.store.tg_api.tg_api import TgClient
 
 KEYBOARD = {
     'keyboard_start': {
-        'keyboard': [['/registration', '/create_game', '/start_game',
-                      '/stop_game', '/start_tour', '/help', '/add']],
+        'keyboard': [['/registration', '/create_game'],
+                     ['/start_game', '/stop_game'],
+                     ['/start_tour', '/help', '/add']],
         'one_time_keyboard': False,
         'is_persistent': True,
         'resize_keyboard': True},

@@ -107,10 +107,11 @@ class Game:
                         return
 
                     text = (f'Капитан {state.captain_name} выберите игрока,\n'
-                                        f'который ответит на заданный вопрос')
+                            'который ответит на заданный вопрос')
                     keyboard = {'inline_keyboard': [[{
                         'text': player.name,
-                        'callback_data': player.user_id}] for player in players]}
+                        'callback_data': player.user_id}]
+                         for player in players]}
                     await self.tg_client.send_message(chat_id, text, keyboard)
                     state.timer_tour = True
                     await self.store.games.update_state_timer(
@@ -118,7 +119,7 @@ class Game:
 
                     timer_answer = await self.start_timer_answer(chat_id)
                     state = await self.store.games.get_score_state(id_game)
-                    await sleep(1)
+                    await sleep(1.5)
                     if timer_answer is True and state.get_answer is not True:
                         state.get_answer = True
                         state.start_round += 1

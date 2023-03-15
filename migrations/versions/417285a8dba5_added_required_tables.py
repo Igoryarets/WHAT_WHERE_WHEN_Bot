@@ -1,8 +1,8 @@
 """Added required tables
 
-Revision ID: 371a5852ac80
+Revision ID: 417285a8dba5
 Revises: 
-Create Date: 2023-03-14 08:05:45.947060
+Create Date: 2023-03-15 15:07:53.737248
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '371a5852ac80'
+revision = '417285a8dba5'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,7 +29,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('chat_id')
     )
     op.create_table('players',
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('name', sa.Text(), nullable=False),
     sa.PrimaryKeyConstraint('user_id')
     )
@@ -50,13 +50,13 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('players_chats',
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('chat_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['chat_id'], ['chats.chat_id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['players.user_id'], )
     )
     op.create_table('players_games',
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('game_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['game_id'], ['games.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['players.user_id'], )

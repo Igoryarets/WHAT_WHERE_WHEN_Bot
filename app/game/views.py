@@ -4,7 +4,7 @@ from app.web.app import View
 from app.web.utils import json_response
 
 from .schemes import (ChatListSchema, GameListSchema, PlayerListSchema,
-                      ScoreListSchema, ScoreSchema)
+                      ScoreListSchema, TourListSchema)
 
 
 class ChatListView(View):
@@ -50,3 +50,10 @@ class ScoreListView(View):
             score = await self.store.games.get_score_state(game.id)
             score_list.append(score)
         return json_response(ScoreListSchema().dump({'scores': score_list}))
+
+
+class TourListView(View):
+    @response_schema(TourListSchema)
+    async def get(self):
+        tours = await self.store.games.list_tours()
+        return json_response(TourListSchema().dump({'tours': tours}))

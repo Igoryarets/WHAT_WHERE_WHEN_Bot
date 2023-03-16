@@ -193,8 +193,8 @@ class GameAccessor(BaseAccessor):
         async with self.app.database.session() as db:
             try:
                 tour = await db.execute(
-                    select(TourGame).where(
-                        TourGame.question_id == question_id
+                    select(QuestionModel).join(
+                        TourGame).where(QuestionModel.id == question_id
                     )
                 )
                 (res, ) = tour.first()
@@ -203,6 +203,15 @@ class GameAccessor(BaseAccessor):
         return Tour(id=res.id,
                     question_id=res.question_id,
                     game_id=res.game_id)
+
+    async def list_tours(self):
+        async with self.app.database.session() as db:
+            result = await db.execute(
+                select(TourGame))
+            tours = result.scalars().all()
+            list_players = [
+                Tour(tour.id, tour.question_id, tour.game_id) for tour in tours]
+        return list_players
 
     async def create_tour(self, question_id, game_id):
         async with self.app.database.session() as db:

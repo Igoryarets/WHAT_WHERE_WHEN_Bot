@@ -1,7 +1,7 @@
 import typing
 
 from .views import (ChatListView, GameActiveListView, GameListView,
-                    PlayerListView, ScoreListView)
+                    PlayerListView, ScoreListView, TourListView)
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
@@ -14,3 +14,4 @@ def setup_routes(app: "Application"):
     app.router.add_view("/game/players/", PlayerListView)
     app.router.add_view("/game/active_games/", GameActiveListView)
     app.router.add_view("/game/score/", ScoreListView)
+    app.router.add_view("/game/tours/", TourListView)

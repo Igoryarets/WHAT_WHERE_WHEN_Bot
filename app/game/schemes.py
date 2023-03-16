@@ -47,3 +47,13 @@ class ScoreSchema(Schema):
 
 class ScoreListSchema(Schema):
     scores = fields.List(fields.Nested(ScoreSchema()))
+
+
+class TourSchema(Schema):
+    id = fields.Int()
+    question_id = fields.Int()
+    game_id = fields.Int()
+
+
+class TourListSchema(Schema):
+    tours = fields.List(fields.Nested(TourSchema()))

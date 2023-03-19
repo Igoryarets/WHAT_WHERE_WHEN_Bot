@@ -7,9 +7,23 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.store.database.sqlalchemy_base import db
+import yaml
 
-DATABASE_URL = "postgresql+asyncpg://postgres:postgres@127.0.0.1/Tg_Bot_CHGK"
-# DATABASE_URL = "postgresql+asyncpg://kts_user:kts_pass@0.0.0.0/kts"
+from pathlib import Path
+
+config_path = Path(__file__).parent.parent
+
+with open(f'{config_path}/config.yml', "r") as f:
+    raw_config = yaml.safe_load(f)
+
+DATABASE_URL = ("postgresql+asyncpg://"
+                f"{raw_config['database']['user']}:"
+                f"{raw_config['database']['password']}@"
+                f"{raw_config['database']['host']}/"
+                f"{raw_config['database']['database']}")
+
+# DATABASE_URL = "postgresql+asyncpg://postgres:postgres@127.0.0.1/Tg_Bot_CHGK"
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

@@ -13,8 +13,6 @@ from app.store.database import db
 if TYPE_CHECKING:
     from app.web.app import Application
 
-DATABASE_URL = "postgresql+asyncpg://postgres:postgres@127.0.0.1/Tg_Bot_CHGK"
-
 
 class Database:
     def __init__(self, app: "Application"):
@@ -24,6 +22,11 @@ class Database:
         self.session: Optional[AsyncSession] = None
 
     async def connect(self, *_: list, **__: dict) -> None:
+        DATABASE_URL = ("postgresql+asyncpg://"
+                        f"{self.app.config.database.user}:"
+                        f"{self.app.config.database.password}@"
+                        f"{self.app.config.database.host}/"
+                        f"{self.app.config.database.database}")
         self._db = db
         self._engine = create_async_engine(DATABASE_URL, echo=True)
         self.session = sessionmaker(

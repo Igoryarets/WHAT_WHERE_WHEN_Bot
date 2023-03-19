@@ -13,3 +13,7 @@ class QuestionSchema(Schema):
 
 class ListQuestionSchema(Schema):
     questions = fields.Nested(QuestionSchema, many=True)
+
+
+class DownloadQuestionsSchema(Schema):
+    status = fields.Str(required=True)

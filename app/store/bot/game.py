@@ -115,6 +115,8 @@ class Game:
 
         state = await self.store.games.get_score_state(game_id)
         if state.get_answer is True:
+            text = ('Вы либо ответили, либо не успели ответить')
+            await self.tg_client.send_message(chat_id, text)
             return
 
         if state.timer_tour is not True:
@@ -251,7 +253,8 @@ class Game:
                     return
                 text = 'У вас осталось 10 секунд'
                 await self.tg_client.send_message(chat_id, text)
-        await self.finish_tour(chat_id, id_game, players)
+        # await self.finish_tour(chat_id, id_game, players)
+        create_task(self.finish_tour(chat_id, id_game, players))
 
     async def finish_tour(self, chat_id, id_game, players):
         check_t = await self.store.games.get_game_stop(id_game)
@@ -273,7 +276,7 @@ class Game:
         timer_answer = await self.start_timer_answer(chat_id)
         state = await self.store.games.get_score_state(id_game)
         answer_quest = await self.store.games.get_answer_by_game_tour(id_game)
-        logging.info(f'Answer from db: {answer_quest.lower()}')        
+        logging.info(f'Answer from db: {answer_quest.lower()}')
 
         await sleep(1.5)
         if timer_answer is True and state.get_answer is not True:
@@ -298,8 +301,8 @@ class Game:
 
     async def start_timer_answer(self,
                                  chat_id: int,
-                                 seconds: int = 10) -> bool:
-        text = ('У Вас есть 10 секунд, чтобы написать ответ\n'
+                                 seconds: int = 20) -> bool:
+        text = ('У Вас есть 20 секунд, чтобы написать ответ\n'
                 'формат ответа /answer <ваш ответ>')
         await self.tg_client.send_message(chat_id, text)
         while seconds:

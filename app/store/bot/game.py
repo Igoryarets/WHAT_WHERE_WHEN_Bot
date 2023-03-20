@@ -251,7 +251,8 @@ class Game:
                     return
                 text = 'У вас осталось 10 секунд'
                 await self.tg_client.send_message(chat_id, text)
-        await self.finish_tour(chat_id, id_game, players)
+        # await self.finish_tour(chat_id, id_game, players)
+        create_task(self.finish_tour(chat_id, id_game, players))
 
     async def finish_tour(self, chat_id, id_game, players):
         check_t = await self.store.games.get_game_stop(id_game)

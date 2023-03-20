@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.store.database import db
-from sqlalchemy_utils import create_database, database_exists
+# from sqlalchemy_utils import create_database, database_exists
 # from sqlalchemy.orm import declarative_base
 
 
@@ -20,14 +20,14 @@ class Database:
         self._db: Optional[declarative_base] = None
         self.session: Optional[AsyncSession] = None
 
-    def create_db(self, *_: list, **__: dict) -> None:
-        DATABASE_URL = ("postgresql+asyncpg://"
-                        f"{self.app.config.database.user}:"
-                        f"{self.app.config.database.password}@"
-                        f"{self.app.config.database.host}/"
-                        f"{self.app.config.database.database}")
-        if not database_exists(DATABASE_URL):
-            create_database(DATABASE_URL)
+    # def create_db(self, *_: list, **__: dict) -> None:
+    #     DATABASE_URL = ("postgresql+asyncpg://"
+    #                     f"{self.app.config.database.user}:"
+    #                     f"{self.app.config.database.password}@"
+    #                     f"{self.app.config.database.host}/"
+    #                     f"{self.app.config.database.database}")
+    #     if not database_exists(DATABASE_URL):
+    #         create_database(DATABASE_URL)
 
     async def connect(self, *_: list, **__: dict) -> None:
         DATABASE_URL = ("postgresql+asyncpg://"

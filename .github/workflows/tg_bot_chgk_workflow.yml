@@ -1,6 +1,8 @@
 name: tg_bot_chgk workflow
 
-on: [push]
+on:
+  push:
+    branches: [ master ]
 
 jobs:  
   build_and_push_to_docker_hub:
@@ -23,29 +25,30 @@ jobs:
             tags: igoryarets/tg_bot_chgk:latest
 
   deploy:
-    runs-on: ubuntu-latest
-    needs: build_and_push_to_docker_hub
-    if: success() && github.ref == 'refs/heads/master'
-    steps:
-    - name: executing remote ssh commands to deploy
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.PASSPHRASE }}
-        script: |          
-          sudo docker-compose stop
-          sudo docker-compose rm web          
-          touch .env
-          echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-          echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
-          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-          echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-          echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-          echo DB_PORT=${{ secrets.IMAGE_DOCKER_HUB }} >> .env
-          echo DB_PORT=${{ secrets.NGINX_PORT }} >> .env          
-          sudo docker-compose up -d
+      runs-on: ubuntu-latest
+      needs: build_and_push_to_docker_hub
+      if: success() && github.ref == 'refs/heads/master'
+      steps:
+      - name: executing remote ssh commands to deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          script: |          
+            sudo docker-compose stop
+            sudo docker-compose rm web
+            sudo docker pull igoryarets/tg_bot_chgk        
+            touch .env
+            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+            echo DB_PORT=${{ secrets.IMAGE_DOCKER_HUB }} >> .env
+            echo DB_PORT=${{ secrets.NGINX_PORT }} >> .env          
+            sudo docker-compose up -d --build
   send_message:
     runs-on: ubuntu-latest
     needs: deploy

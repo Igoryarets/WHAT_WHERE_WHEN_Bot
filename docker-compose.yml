@@ -8,8 +8,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - .env
-  
+      - .env  
   web:
     image: "${IMAGE_DOCKER_HUB}":latest
     container_name: AioHTTP_CHGK
@@ -17,8 +16,7 @@ services:
     depends_on:
       - db
     env_file:
-      - .env
-  
+      - .env  
   nginx:
     image: nginx:1.19.3
     ports:

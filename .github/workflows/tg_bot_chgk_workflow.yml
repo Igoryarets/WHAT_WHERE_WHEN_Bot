@@ -1,8 +1,6 @@
 name: tg_bot_chgk workflow
 
-on:
-  push:
-    branches: [ master ]
+on: [push]
 
 jobs:  
   build_and_push_to_docker_hub:

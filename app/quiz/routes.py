@@ -1,6 +1,6 @@
 import typing
 
-from app.quiz.views import QuestionAddView, QuestionGetById, DownloadQuestions
+from app.quiz.views import DownloadQuestions, QuestionAddView, QuestionGetById
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application

@@ -1,5 +1,6 @@
 from app.store import Store
-from .utils import ok_response
+
+from ..utils import ok_response
 
 
 class TestAdminLoginView:
@@ -9,7 +10,7 @@ class TestAdminLoginView:
         assert admin.email == config.admin.email
         # Password must be hashed
         assert admin.password != config.admin.password
-        assert admin.id == 2
+        assert admin.id == 1
 
     async def test_success(self, cli, config):
         resp = await cli.post(
@@ -23,7 +24,7 @@ class TestAdminLoginView:
         data = await resp.json()
         assert data == ok_response(
             {
-                "id": 2,
+                "id": 1,
                 "email": config.admin.email,
             }
         )

@@ -1,14 +1,21 @@
-from aiohttp.web_exceptions import HTTPBadRequest, HTTPConflict, HTTPNotFound
-from aiohttp_apispec import querystring_schema, request_schema, response_schema
+import csv
+import os
 
-from app.quiz.schemes import ListQuestionSchema, QuestionSchema, QuiestionIdSchema, DownloadQuestionsSchema
+from aiohttp_apispec import docs, request_schema, response_schema
+
+from app.quiz.schemes import (DownloadQuestionsSchema, QuestionSchema,
+                              QuiestionIdSchema)
 from app.web.app import View
 from app.web.mixins import AuthRequiredMixin
 from app.web.utils import json_response
-import csv
-from pathlib import Path
+
 
 class QuestionAddView(AuthRequiredMixin, View):
+    @docs(
+        tags=['question'],
+        summary='question add',
+        description='Admin authorization add question',
+    )
     @request_schema(QuestionSchema)
     @response_schema(QuestionSchema)
     async def post(self):
@@ -24,6 +31,11 @@ class QuestionAddView(AuthRequiredMixin, View):
 
 
 class QuestionGetById(View):
+    @docs(
+        tags=['question'],
+        summary='question get by id',
+        description='All users can view the question by id',
+    )
     @request_schema(QuiestionIdSchema)
     @response_schema(QuestionSchema)
     async def post(self):
@@ -34,12 +46,18 @@ class QuestionGetById(View):
 
 
 class DownloadQuestions(AuthRequiredMixin, View):
+    @docs(
+        tags=['question'],
+        summary='26000 questions add to DB',
+        description='Admin authorization add questions',
+    )    
     @response_schema(DownloadQuestionsSchema)
     async def get(self):
-        BASE_DIR = Path(__file__).parent.parent
-        current_dir = '\data\questions.csv'
+        data_path = os.path.join(
+            os.path.abspath(
+                os.path.dirname(__file__)), "..", "data", "questions.csv"
+        )
 
-        data_path = f'{BASE_DIR}{current_dir}'
         with open(
             data_path, 'r', encoding='utf-8'
         ) as file:

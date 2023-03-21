@@ -1,4 +1,4 @@
-from aiohttp_apispec import response_schema
+from aiohttp_apispec import docs, response_schema
 
 from app.web.app import View
 from app.web.utils import json_response
@@ -8,6 +8,11 @@ from .schemes import (ChatListSchema, GameListSchema, PlayerListSchema,
 
 
 class ChatListView(View):
+    @docs(
+        tags=['game'],
+        summary='get chats',
+        description='Shows chats',
+    )
     @response_schema(ChatListSchema)
     async def get(self):
         chats = await self.store.games.list_chats()
@@ -15,6 +20,11 @@ class ChatListView(View):
 
 
 class GameListView(View):
+    @docs(
+        tags=['game'],
+        summary='get all games',
+        description='Shows all games',
+    )
     @response_schema(GameListSchema)
     async def get(self):
         games = await self.store.games.list_games()
@@ -22,6 +32,11 @@ class GameListView(View):
 
 
 class PlayerListView(View):
+    @docs(
+        tags=['players'],
+        summary='get all players',
+        description='Shows all players',
+    )
     @response_schema(PlayerListSchema)
     async def get(self):
         players = await self.store.games.list_players()
@@ -29,6 +44,11 @@ class PlayerListView(View):
 
 
 class GameActiveListView(View):
+    @docs(
+        tags=['game'],
+        summary='get all active games',
+        description='Shows all active games',
+    )
     @response_schema(GameListSchema)
     async def get(self):
         chats = await self.store.games.list_chats()
@@ -42,6 +62,11 @@ class GameActiveListView(View):
 
 
 class ScoreListView(View):
+    @docs(
+        tags=['state'],
+        summary='get state games',
+        description='Shows state games',
+    )
     @response_schema(ScoreListSchema)
     async def get(self):
         games = await self.store.games.list_games()
@@ -53,6 +78,11 @@ class ScoreListView(View):
 
 
 class TourListView(View):
+    @docs(
+        tags=['round'],
+        summary='get state games',
+        description='Shows state games',
+    )
     @response_schema(TourListSchema)
     async def get(self):
         tours = await self.store.games.list_tours()

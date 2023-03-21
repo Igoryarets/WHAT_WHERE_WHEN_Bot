@@ -1,5 +1,5 @@
 import logging
-from asyncio import sleep, create_task
+from asyncio import create_task, sleep
 from random import randint
 
 from sqlalchemy.orm.collections import InstrumentedList

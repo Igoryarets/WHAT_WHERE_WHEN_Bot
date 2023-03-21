@@ -1,12 +1,11 @@
-import logging
 import os
 from hashlib import sha256
-# from unittest.mock import AsyncMock
 
 import pytest
 from aiohttp.test_utils import TestClient, loop_context
+from alembic import command
+from alembic.config import Config as AlembicConfig
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.admin.models import Admin, AdminModel
 from app.store import Database, Store
@@ -24,13 +23,11 @@ def event_loop():
 def server():
     app = setup_app(
         config_path=os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "config.yml"
+            os.path.abspath(os.path.dirname(__file__)), "config_test.yml"
         )
     )
     app.on_startup.clear()
     app.on_shutdown.clear()
-    # app.store.vk_api = AsyncMock()
-    # app.store.vk_api.send_message = AsyncMock()
 
     app.database = Database(app)
     app.on_startup.append(app.database.connect)
@@ -39,9 +36,20 @@ def server():
     return app
 
 
+@pytest.fixture(scope='session')
+def alembic_cfg() -> AlembicConfig:
+    return AlembicConfig('alembic.ini')
+
+
+@pytest.fixture(scope='session', autouse=True)
+def db_migrated(alembic_cfg: AlembicConfig) -> None:
+    command.upgrade(alembic_cfg, 'head')
+
+
 @pytest.fixture
 def store(server) -> Store:
     return server.store
+
 
 
 @pytest.fixture
@@ -49,22 +57,15 @@ def db_session(server):
     return server.database.session
 
 
-@pytest.fixture(autouse=True, scope="function")
-async def clear_db(server):
+@pytest.fixture(scope="function")
+async def clear_db(server, db_session):
     yield
-    try:
-        # session = AsyncSession(server.database._engine)
-        # connection = session.connection()
-        async with server.database.session() as session:
-            for table in server.database._db.metadata.tables:
-                await session.execute(text(f"TRUNCATE {table} CASCADE"))
-                await session.execute(text(
-                    f"ALTER SEQUENCE {table}_id_seq RESTART WITH 1"))
-            await session.commit()
-        # connection.close()
-
-    except Exception as err:
-        logging.warning(err)
+    async with db_session as session:
+        for table in server.database._db.metadata.tables:
+            await session.execute(text(f"TRUNCATE {table} CASCADE"))
+            await session.execute(text(
+                f"ALTER SEQUENCE {table}_id_seq RESTART WITH 1"))
+        await session.commit()
 
 
 @pytest.fixture

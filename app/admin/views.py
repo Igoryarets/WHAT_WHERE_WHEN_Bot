@@ -1,17 +1,21 @@
 from hashlib import sha256
 
 from aiohttp.web import HTTPForbidden
-from aiohttp_apispec import request_schema, response_schema
+from aiohttp_apispec import docs, request_schema, response_schema
 from aiohttp_session import new_session
 
-from app.admin.schemes import AdminSchema, AdminCreateSchema
-from app.web.app import View
+from app.admin.schemes import AdminCreateSchema, AdminSchema
+from app.web.app import View, app
 from app.web.mixins import AuthRequiredMixin
 from app.web.utils import json_response
-from app.web.app import app
 
 
 class AdminLoginView(View):
+    @docs(
+        tags=['admin'],
+        summary='admin login',
+        description='Create admin session authorization by email and password',
+    )
     @request_schema(AdminSchema)
     @response_schema(AdminSchema, 200)
     async def post(self):
@@ -31,6 +35,11 @@ class AdminLoginView(View):
 
 
 class CreateAdminView(View):
+    @docs(
+        tags=['admin'],
+        summary='create admin from config',
+        description='Create admin from config',
+    )
     @response_schema(AdminCreateSchema, 200)
     async def post(self):
         await self.store.admins.create_admin_after_start_app(app)
@@ -38,6 +47,11 @@ class CreateAdminView(View):
 
 
 class AdminCurrentView(AuthRequiredMixin, View):
+    @docs(
+        tags=['admin'],
+        summary='current admin',
+        description='Shows current admin information',
+    )
     @response_schema(AdminSchema, 200)
     async def get(self):
         return json_response(AdminSchema().dump(self.request.admin))

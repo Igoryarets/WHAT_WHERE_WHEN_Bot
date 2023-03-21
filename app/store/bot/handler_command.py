@@ -164,6 +164,7 @@ class HandlerCommand:
 
         active_game_in_chat = await self.store.games.get_active_game_start(
             chat_id)
+
         if active_game_in_chat:
             text = ('В этом чате игровая сессия уже начата,'
                     'чтобы начать новую игру, необходимо'
@@ -172,6 +173,10 @@ class HandlerCommand:
             return
 
         act_game = await self.store.games.get_active_game(chat_id)
+        if act_game is None:
+            text = ('Сначала выполните /create_game')
+            await self.tg_client.send_message(chat_id, text)
+            return
         id_act_game = act_game.id
         players = await self.store.games.get_players_to_game(id_act_game)
 

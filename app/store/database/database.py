@@ -4,8 +4,10 @@ from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
                                     create_async_engine)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from app.store.database import db
 from sqlalchemy_utils import create_database, database_exists
+
+from app.store.database import db
+
 # from sqlalchemy.orm import declarative_base
 
 

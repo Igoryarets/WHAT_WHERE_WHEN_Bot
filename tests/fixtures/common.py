@@ -12,7 +12,12 @@ from app.admin.models import Admin, AdminModel
 from app.store import Database, Store
 from app.web.app import setup_app
 from app.web.config import Config
+import pytest_asyncio
 
+from sqlalchemy_utils import create_database, drop_database
+
+from alembic import command
+from alembic.config import Config as AlembicConfig
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -20,7 +25,7 @@ def event_loop():
         yield _loop
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(autouse=True, scope="session")
 def server():
     app = setup_app(
         config_path=os.path.join(
@@ -39,6 +44,20 @@ def server():
     return app
 
 
+# @pytest.fixture(scope="session")
+# async def test_db_setup_sessionmaker(server):
+#     # async with server.database.session.begin() as conn:
+#     #     await conn.run_sync(server.database._db.metadata.drop_all)
+#     #     await conn.run_sync(server.database._db.metadata.create_all)
+
+#     print('WWWWWWWWWWWWWWWWWWWWWWWWWWWWW', server.database._db.metadata.tables)
+
+#     async with server.database.session() as session:
+#         for table in server.database._db.metadata.tables:
+#             print('QQQQQQQQQQQQQQQQQQQQQQQQQQ', table)
+#             await session.execute(text(f"CREATE TABLE {table}"))
+
+
 @pytest.fixture
 def store(server) -> Store:
     return server.store
@@ -49,22 +68,56 @@ def db_session(server):
     return server.database.session
 
 
-@pytest.fixture(autouse=True, scope="function")
-async def clear_db(server):
+# @pytest.fixture(autouse=True, scope="function")
+# async def clear_db(server):
+#     yield
+#     try:
+#         # session = AsyncSession(server.database._engine)
+#         # connection = await session.connection()
+#         async with server.database.session() as session:
+#             for table in server.database._db.metadata.tables:
+#                 await session.execute(text(f"TRUNCATE {table} CASCADE"))
+#                 await session.execute(text(f"ALTER SEQUENCE {table}_id_seq RESTART WITH 1"))
+
+#         await session.commit()
+#         # await connection.close()
+
+#     except Exception as err:
+#         logging.warning(err)
+
+
+DATABASE_URL = "postgresql+asyncpg://postgres:postgres@127.0.0.1/Tg_Bot_CHGK_test"
+
+# @pytest.fixture(autouse=True, scope='session')
+# def temp_db_create() -> None:
+#     create_database(DATABASE_URL)
+#     yield
+#     drop_database(DATABASE_URL)
+
+
+
+
+# @pytest.fixture(autouse=True)
+@pytest.fixture(scope='session')
+async def db(server) -> Database:
     yield
-    try:
-        # session = AsyncSession(server.database._engine)
-        # connection = await session.connection()
-        async with server.database.session() as session:
-            for table in server.database._db.metadata.tables:
-                await session.execute(text(f"TRUNCATE {table} CASCADE"))
-                await session.execute(text(f"ALTER SEQUENCE {table}_id_seq RESTART WITH 1"))
+    async with server.database._engine.begin() as session:
+        for table in server.database._db.metadata.tables:
+            await session.execute(text(f'DROP {table} CASCADE'))
+            # await session.execute(text(f"ALTER SEQUENCE {table}_id_seq RESTART WITH 1"))
 
-        await session.commit()
-        # await connection.close()
 
-    except Exception as err:
-        logging.warning(err)
+@pytest.fixture(scope='session')
+def alembic_cfg() -> AlembicConfig:
+    return AlembicConfig('alembic.ini')
+
+@pytest.fixture(scope='session', autouse=True)
+def db_migrated(alembic_cfg: AlembicConfig) -> None:
+    command.upgrade(alembic_cfg, 'head')
+
+
+
+
 
 
 @pytest.fixture

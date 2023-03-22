@@ -13,7 +13,7 @@ services:
     image: igoryarets/tg_bot_chgk:latest
     container_name: AioHTTP_CHGK
     volumes:
-      - .config.yml:/WHAT_WHERE_WHEN/config.yml
+      - .config.yml:/WHAT_WHERE_WHEN/conf.yml
     depends_on:
       - db
     env_file:

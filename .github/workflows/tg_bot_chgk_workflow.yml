@@ -44,8 +44,8 @@ jobs:
             echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-            echo DB_PORT=${{ secrets.IMAGE_DOCKER_HUB }} >> .env
-            echo DB_PORT=${{ secrets.NGINX_PORT }} >> .env          
+            echo IMAGE_DOCKER_HUB=${{ secrets.IMAGE_DOCKER_HUB }} >> .env
+            echo NGINX_PORT=${{ secrets.NGINX_PORT }} >> .env          
             sudo docker-compose up -d --build
   send_message:
     runs-on: ubuntu-latest

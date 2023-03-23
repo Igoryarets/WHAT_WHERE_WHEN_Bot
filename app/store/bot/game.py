@@ -65,7 +65,10 @@ class Game:
             captain.name, captain.user_id, game_id)
 
         text = (f'Количество туров: {self.finish_count_round}.\n'
-                f'Вы соревнуетесь с ботом, на каждый ответ дается 1 минута')
+                f'Вы соревнуетесь с ботом, на каждый ответ дается 1 минута.\n'
+                'Напоминаю: каждый новый тур запускается с помощью'
+                ' /start_tour.\n'
+                'Начинайте играть /start_tour. Удачи !!!')
         await self.tg_client.send_message(chat_id, text)
 
     async def start_tour(self, chat_id: int, players: list[dict], id_game: int) -> None:
@@ -278,7 +281,7 @@ class Game:
         answer_quest = await self.store.games.get_answer_by_game_tour(id_game)
         logging.info(f'Answer from db: {answer_quest.lower()}')
 
-        await sleep(1.5)
+        # await sleep(1.5)
         if timer_answer is True and state.get_answer is not True:
             state.get_answer = True
             state.start_round += 1

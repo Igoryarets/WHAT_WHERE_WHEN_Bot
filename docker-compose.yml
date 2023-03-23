@@ -14,6 +14,7 @@ services:
     container_name: AioHTTP_CHGK
     volumes:
       - ./config.yml:/WHAT_WHERE_WHEN/config.yml
+    restart: always
     depends_on:
       - db
     env_file:

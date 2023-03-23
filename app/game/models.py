@@ -95,7 +95,7 @@ class PlayerModel(db):
 class ChatModel(db):
     __tablename__ = 'chats'
 
-    chat_id = Column(Integer(), primary_key=True)
+    chat_id = Column(BigInteger(), primary_key=True)
 
     players: list['PlayerModel'] = relationship(
         'PlayerModel', secondary=players_chats, back_populates='chats'
